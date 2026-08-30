@@ -1,0 +1,30 @@
+import { zeroBonus } from '../utils/helpers.js';
+
+// Razze e sottorazze ufficiali del Manuale del Giocatore (5e 2014)
+
+const DEFAULT_RAZZE = [
+  { id: "umano", nome: "Umano", velocita: "9 m", visione: "Normale", vantaggi: "—", resistenze: "—", immunita: "—", bonus: { FOR: 1, DES: 1, COS: 1, INT: 1, SAG: 1, CAR: 1 }, tratti: [{ nome: "Versatilità", desc: "Un punto in ogni caratteristica, grande adattabilità in qualunque ruolo." }] },
+  { id: "elfo", nome: "Elfo", velocita: "9 m", visione: "Scurovisione 18 m", vantaggi: "Vantaggio ai tiri salvezza contro l'essere Affascinato", resistenze: "—", immunita: "—", bonus: { ...zeroBonus(), DES: 2 }, tratti: [{ nome: "Scurovisione", desc: "Vedi entro 18 m anche al buio, come in penombra." }, { nome: "Trance", desc: "Non dormi: mediti 4 ore per ottenere il beneficio di un riposo lungo di 8 ore." }] },
+  { id: "nano", nome: "Nano", velocita: "7,5 m", visione: "Scurovisione 18 m", vantaggi: "Vantaggio ai tiri salvezza contro il veleno", resistenze: "Resistenza ai danni da veleno", immunita: "—", bonus: { ...zeroBonus(), COS: 2 }, tratti: [{ nome: "Scurovisione", desc: "Vedi entro 18 m anche al buio, come in penombra." }, { nome: "Resistenza Nanica", desc: "Vantaggio ai tiri salvezza contro il veleno e resistenza ai danni da veleno." }] },
+  { id: "halfling", nome: "Halfling", velocita: "7,5 m", visione: "Normale", vantaggi: "Vantaggio ai tiri salvezza contro la paura", resistenze: "—", immunita: "—", bonus: { ...zeroBonus(), DES: 2 }, tratti: [{ nome: "Fortunato", desc: "Se ottieni 1 naturale in un tiro, puoi ritirare il dado." }, { nome: "Coraggioso", desc: "Vantaggio ai tiri salvezza contro la paura." }] },
+  { id: "gnomo", nome: "Gnomo", velocita: "7,5 m", visione: "Scurovisione 18 m", vantaggi: "Vantaggio ai TS di Intelligenza, Saggezza e Carisma contro la magia", resistenze: "—", immunita: "—", bonus: { ...zeroBonus(), INT: 2 }, tratti: [{ nome: "Scurovisione", desc: "Vedi entro 18 m anche al buio, come in penombra." }, { nome: "Astuzia Gnomica", desc: "Vantaggio ai tiri salvezza su Intelligenza, Saggezza e Carisma contro la magia." }] },
+  { id: "mezzelfo", nome: "Mezzelfo", velocita: "9 m", visione: "Scurovisione 18 m", vantaggi: "Vantaggio ai tiri salvezza contro l'essere Affascinato", resistenze: "—", immunita: "—", bonus: { ...zeroBonus(), CAR: 2 }, tratti: [{ nome: "Scurovisione", desc: "Vedi entro 18 m anche al buio, come in penombra." }, { nome: "Duplice Eredità", desc: "+1 a due caratteristiche a scelta (applica manualmente sulla scheda)." }] },
+  { id: "mezzorco", nome: "Mezzorco", velocita: "9 m", visione: "Scurovisione 18 m", vantaggi: "—", resistenze: "—", immunita: "—", bonus: { ...zeroBonus(), FOR: 2, COS: 1 }, tratti: [{ nome: "Resistenza Implacabile", desc: "Se scendi a 0 PF ma non muori sul colpo, puoi restare a 1 PF (una volta per riposo lungo)." }] },
+  { id: "tiefling", nome: "Tiefling", velocita: "9 m", visione: "Scurovisione 18 m", vantaggi: "—", resistenze: "Resistenza ai danni da fuoco", immunita: "—", bonus: { ...zeroBonus(), CAR: 2, INT: 1 }, tratti: [{ nome: "Resistenza Infernale", desc: "Resistenza ai danni da fuoco." }, { nome: "Eredità Infernale", desc: "Conosci il trucchetto Taumaturgia." }] },
+  { id: "dragonide", nome: "Dragonide", velocita: "9 m", visione: "Normale", vantaggi: "—", resistenze: "Resistenza al tipo di danno del soffio (secondo l'ascendenza)", immunita: "—", bonus: { ...zeroBonus(), FOR: 2, CAR: 1 }, tratti: [{ nome: "Arma del Soffio", desc: "Puoi esalare energia distruttiva (tipo di danno secondo l'ascendenza)." }] },
+].map((r) => ({ ...r, custom: false }));
+
+const DEFAULT_SOTTORAZZE = [
+  { id: "alto_elfo", razzaId: "elfo", nome: "Alto Elfo", bonus: { ...zeroBonus(), INT: 1 }, tratti: [{ nome: "Trucchetto Arcano", desc: "Conosci un trucchetto a scelta dalla lista incantesimi da Mago." }] },
+  { id: "elfo_silvano", razzaId: "elfo", nome: "Elfo Silvano", bonus: { ...zeroBonus(), SAG: 1 }, tratti: [{ nome: "Passo Felpato", desc: "Velocità aumentata di 1,5 m." }] },
+  { id: "elfo_scuro", razzaId: "elfo", nome: "Elfo Scuro (Drow)", bonus: { ...zeroBonus(), CAR: 1 }, tratti: [{ nome: "Scurovisione Superiore", desc: "Scurovisione fino a 36 m." }] },
+  { id: "nano_colline", razzaId: "nano", nome: "Nano delle Colline", bonus: { ...zeroBonus(), SAG: 1 }, tratti: [{ nome: "Robustezza Nanica", desc: "+1 PF massimo per livello." }] },
+  { id: "nano_montagne", razzaId: "nano", nome: "Nano delle Montagne", bonus: { ...zeroBonus(), FOR: 2 }, tratti: [{ nome: "Addestramento con Armatura", desc: "Competenza con armature leggere e medie." }] },
+  { id: "halfling_piedelesto", razzaId: "halfling", nome: "Halfling Piedelesto", bonus: { ...zeroBonus(), CAR: 1 }, tratti: [{ nome: "Furtivo per Natura", desc: "Puoi provare a nasconderti anche dietro creature di taglia superiore." }] },
+  { id: "halfling_robusto", razzaId: "halfling", nome: "Halfling Robusto", bonus: { ...zeroBonus(), COS: 1 }, tratti: [{ nome: "Resistenza Robusta", desc: "Vantaggio ai tiri salvezza contro il veleno e resistenza ai danni da veleno." }] },
+  { id: "gnomo_silvestre", razzaId: "gnomo", nome: "Gnomo Silvestre", bonus: { ...zeroBonus(), DES: 1 }, tratti: [{ nome: "Illusionista Naturale", desc: "Conosci il trucchetto Illusione Minore." }, { nome: "Parlare con i Piccoli Animali", desc: "Puoi comunicare semplici idee con bestie di taglia Piccola o inferiore." }] },
+  { id: "gnomo_roccioso", razzaId: "gnomo", nome: "Gnomo Roccioso", bonus: { ...zeroBonus(), COS: 1 }, tratti: [{ nome: "Conoscenza dell'Artefice", desc: "Raddoppi il bonus di competenza sulle prove di Storia relative a oggetti meccanici, alchemici o tecnologici." }, { nome: "Inventore", desc: "Puoi costruire piccoli congegni meccanici (giocattoli, accendifuoco, scatole musicali) con materiali poco costosi." }] },
+].map((s) => ({ ...s, custom: false }));
+
+
+export { DEFAULT_RAZZE, DEFAULT_SOTTORAZZE };
