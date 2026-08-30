@@ -1,6 +1,6 @@
 # Libro Mastro
  
-Il tuo compagno di campagna per D&D 5e — schede personaggio, regole, incantesimi ed equipaggiamento sempre a portata di mano, direttamente dal browser del telefono o del computer.
+La tua pagina interativa per D&D 5e — schede personaggio, regole, incantesimi ed equipaggiamento sempre a portata di mano, direttamente dal browser del telefono o del computer.
  
 ## Cos'è
  
