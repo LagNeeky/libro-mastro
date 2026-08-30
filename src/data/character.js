@@ -6,6 +6,7 @@ const newCharacter = (nome = "") => ({
   id: uid(), nome,
   nomeGiocatore: "", dataCreazione: "",
   razzaNome: "", razzaId: null, sottorazzaNome: "", sottorazzaId: null,
+  backgroundNome: "", backgroundId: null,
   classi: [{ instId: uid(), nome: "", classeId: null, sottoclasseNome: "", sottoclasseId: null, livello: 1 }],
   abilita: { FOR: 10, DES: 10, COS: 10, INT: 10, SAG: 10, CAR: 10 },
   pfMax: 10, pfAttuali: 10, pfTemp: 0, pfDanniTotale: 0,
