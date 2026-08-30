@@ -8,6 +8,8 @@ import { DEFAULT_RAZZE, DEFAULT_SOTTORAZZE } from "./data/razze.js";
 import { DEFAULT_CLASSI, DEFAULT_SOTTOCLASSI } from "./data/classi.js";
 import { DEFAULT_WEAPONS, DEFAULT_ARMORS, DEFAULT_ACCESSORI } from "./data/equip.js";
 import { DEFAULT_SPELLS } from "./data/incantesimi.js";
+import { DEFAULT_BACKGROUNDS } from "./data/backgrounds.js";
+import { DEFAULT_TALENTI_CATALOGO } from "./data/talenti.js";
 
 import { RollModal, DetailModal } from "./components/shared.jsx";
 import SchedeTab from "./components/SchedeTab.jsx";
@@ -15,6 +17,8 @@ import IdentitaTab from "./components/IdentitaTab.jsx";
 import RegoleTab from "./components/RegoleTab.jsx";
 import RazzeTab from "./components/RazzeTab.jsx";
 import ClassiTab from "./components/ClassiTab.jsx";
+import TrasfondiTab from "./components/TrasfondiTab.jsx";
+import TalentiCatalogoTab from "./components/TalentiCatalogoTab.jsx";
 import IncantesimiTab from "./components/IncantesimiTab.jsx";
 import EquipTab from "./components/EquipTab.jsx";
 import AppuntiTab from "./components/AppuntiTab.jsx";
@@ -24,7 +28,7 @@ import InfoModal from "./components/InfoModal.jsx";
 
 const TABS = [
   { id: "schede", label: "Schede PG" }, { id: "identita", label: "Carta d'Identità" }, { id: "regole", label: "Regole" },
-  { id: "razze", label: "Razze" }, { id: "classi", label: "Classi" },
+  { id: "razze", label: "Razze" }, { id: "classi", label: "Classi" }, { id: "trasfondi", label: "Trasfondi" }, { id: "talenti_catalogo", label: "Talenti" },
   { id: "incantesimi", label: "Incantesimi" }, { id: "equip", label: "Armi, Armature & Accessori" },
   { id: "appunti", label: "Appunti" }, { id: "conoscenza", label: "Conoscenza" }, { id: "mappe", label: "Mappe" },
 ];
@@ -44,6 +48,8 @@ export default function LibroMastro() {
   const [armature, setArmature, armatureLoaded] = useCatalogState("armature", DEFAULT_ARMORS);
   const [accessori, setAccessori, accessoriLoaded] = useCatalogState("accessori", DEFAULT_ACCESSORI);
   const [incantesimi, setIncantesimi, incantesimiLoaded] = useCatalogState("incantesimi", DEFAULT_SPELLS);
+  const [backgrounds, setBackgrounds, backgroundsLoaded] = useCatalogState("backgrounds", DEFAULT_BACKGROUNDS);
+  const [talentiCatalogo, setTalentiCatalogo, talentiCatalogoLoaded] = useCatalogState("talentiCatalogo", DEFAULT_TALENTI_CATALOGO);
 
   const [personaggi, setPersonaggi, personaggiLoaded] = usePersistentState("personaggi", [newCharacter()]);
   const [attivoId, setAttivoId] = useState(null);
@@ -55,6 +61,7 @@ export default function LibroMastro() {
 
   const tuttoCaricato = tabOrderLoaded && skillsLoaded && razzeLoaded && sottorazzeLoaded && classiLoaded &&
     sottoclassiLoaded && armiLoaded && armatureLoaded && accessoriLoaded && incantesimiLoaded &&
+    backgroundsLoaded && talentiCatalogoLoaded &&
     personaggiLoaded && appuntiLoaded && documentiLoaded && mappeLoaded;
 
   const orderedTabs = tabOrder.map((id) => TABS.find((t) => t.id === id)).filter(Boolean);
@@ -159,10 +166,12 @@ export default function LibroMastro() {
           armi={armi} armature={armature} accessori={accessori} incantesimi={incantesimi}
           openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} openDetail={setDetail}
           onEsportaPg={esportaPg} onImportaPg={importaPg} />}
-        {tab === "identita" && <IdentitaTab personaggi={personaggi} attivoId={pg.id} setAttivoId={setAttivoId} aggiungiPg={aggiungiPg} rimuoviPg={rimuoviPg} pg={pg} updatePg={updatePg} />}
+        {tab === "identita" && <IdentitaTab personaggi={personaggi} attivoId={pg.id} setAttivoId={setAttivoId} aggiungiPg={aggiungiPg} rimuoviPg={rimuoviPg} pg={pg} updatePg={updatePg} backgrounds={backgrounds} />}
         {tab === "regole" && <RegoleTab openDetail={setDetail} />}
         {tab === "razze" && <RazzeTab razze={razze} setRazze={setRazze} sottorazze={sottorazze} setSottorazze={setSottorazze} openDetail={setDetail} />}
         {tab === "classi" && <ClassiTab classi={classi} setClassi={setClassi} sottoclassi={sottoclassi} setSottoclassi={setSottoclassi} openDetail={setDetail} />}
+        {tab === "trasfondi" && <TrasfondiTab backgrounds={backgrounds} setBackgrounds={setBackgrounds} openDetail={setDetail} />}
+        {tab === "talenti_catalogo" && <TalentiCatalogoTab talentiCatalogo={talentiCatalogo} setTalentiCatalogo={setTalentiCatalogo} openDetail={setDetail} />}
         {tab === "incantesimi" && <IncantesimiTab classi={classi} incantesimi={incantesimi} setIncantesimi={setIncantesimi} openDetail={setDetail} pg={pg} updatePg={updatePg} />}
         {tab === "equip" && <EquipTab classi={classi} armi={armi} setArmi={setArmi} armature={armature} setArmature={setArmature} accessori={accessori} setAccessori={setAccessori} openDetail={setDetail} pg={pg} updatePg={updatePg} />}
         {tab === "appunti" && <AppuntiTab appunti={appunti} setAppunti={setAppunti} />}
