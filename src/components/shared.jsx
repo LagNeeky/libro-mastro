@@ -148,6 +148,23 @@ function DetailModal({ detail, onClose, classi }) {
         {type === "arma" && <div><div style={styles.hint}>Arma da {data.categoria} · Rarità: {data.rarita || "Comune"}</div><div style={styles.detailGrid}><DetailField label="Danno" value={`${data.danno} ${data.tipoDanno}`} /><DetailField label="Proprietà" value={[data.finesse ? "Finesse" : null, data.note].filter(Boolean).join(", ") || "—"} /><DetailField label="Classi" value={data.classi && data.classi.length ? data.classi.map((cid) => (classi.find((c) => c.id === cid) || {}).nome).filter(Boolean).join(", ") : "Tutte"} /></div></div>}
         {type === "armatura" && <div><div style={styles.hint}>Rarità: {data.rarita || "Comune"}</div><div style={styles.detailGrid}><DetailField label="Tipo" value={data.tipo} /><DetailField label="CA base" value={data.ca} /><DetailField label="Bonus DES" value={data.maxDex === null ? "Illimitato" : `Massimo +${data.maxDex}`} />{data.forzaMin && <DetailField label="Forza richiesta" value={data.forzaMin} />}<DetailField label="Classi" value={data.classi && data.classi.length ? data.classi.map((cid) => (classi.find((c) => c.id === cid) || {}).nome).filter(Boolean).join(", ") : "Tutte"} /></div></div>}
         {type === "accessorio" && <div><div style={styles.hint}>Rarità: {data.rarita || "Comune"} · Utilizzabile da tutte le classi</div><p style={styles.modalDesc}>{data.desc}</p></div>}
+        {type === "trasfondo" && (
+          <div>
+            <div style={styles.detailGrid}>
+              <DetailField label="Competenze" value={data.abilita.join(", ") || "—"} />
+              <DetailField label="Strumenti" value={data.strumenti.join(", ") || "—"} />
+              <DetailField label="Lingue" value={data.lingue} />
+            </div>
+            <p style={styles.modalDesc}><strong style={{ color: palette.gold }}>Equipaggiamento.</strong> {data.equipaggiamento}</p>
+            {data.privilegio?.nome && <p style={styles.modalDesc}><strong style={{ color: palette.gold }}>{data.privilegio.nome}.</strong> {data.privilegio.desc}</p>}
+          </div>
+        )}
+        {type === "talento" && (
+          <div>
+            {data.prerequisito && <div style={styles.hint}>Richiede: {data.prerequisito}</div>}
+            <p style={styles.modalDesc}>{data.desc}</p>
+          </div>
+        )}
         {(type === "razza" || type === "sottorazza") && (
           <div>
             {data.velocita && <div style={styles.hint}>Velocità: {data.velocita}</div>}
