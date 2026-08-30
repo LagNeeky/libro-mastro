@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
 import { styles } from '../styles.js';
+import { ComboInput } from './shared.jsx';
 
-function IdentitaTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg }) {
+function IdentitaTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, backgrounds }) {
   const fileInputRef = useRef(null);
   const identita = pg.identita || {};
   const aggiorna = (patch) => updatePg({ identita: { ...identita, ...patch } });
@@ -12,6 +13,11 @@ function IdentitaTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg,
     reader.onload = () => aggiorna({ immagineUrl: String(reader.result) });
     reader.readAsDataURL(file);
     e.target.value = "";
+  };
+  const trasfondoAttuale = backgrounds.find((b) => b.id === pg.backgroundId);
+  const onTrasfondoChange = (text) => {
+    const m = backgrounds.find((b) => b.nome.toLowerCase() === text.toLowerCase());
+    updatePg({ backgroundNome: text, backgroundId: m ? m.id : null });
   };
 
   return (
@@ -76,6 +82,16 @@ function IdentitaTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg,
             <textarea style={styles.notes} value={identita.difetti} onChange={(e) => aggiorna({ difetti: e.target.value })} placeholder="Debolezze, paure, vizi..." />
           </div>
         </div>
+
+        <div style={styles.sectionLabel}>Trasfondo</div>
+        <ComboInput value={pg.backgroundNome || ""} onChangeText={onTrasfondoChange} options={backgrounds} datalistId="dl-trasfondo" placeholder="Scegli o scrivi un trasfondo" style={{ ...styles.formInput, display: "block", width: "100%", marginBottom: 8 }} />
+        {trasfondoAttuale && (
+          <div style={styles.hint}>
+            Competenze: {trasfondoAttuale.abilita.join(", ") || "—"}{trasfondoAttuale.strumenti.length ? ` · Strumenti: ${trasfondoAttuale.strumenti.join(", ")}` : ""}{trasfondoAttuale.lingue ? ` · Lingue: ${trasfondoAttuale.lingue}` : ""}<br />
+            Equipaggiamento: {trasfondoAttuale.equipaggiamento}<br />
+            {trasfondoAttuale.privilegio?.nome && <>Privilegio — {trasfondoAttuale.privilegio.nome}: {trasfondoAttuale.privilegio.desc}</>}
+          </div>
+        )}
 
         <div style={styles.sectionLabel}>Storia (Background)</div>
         <textarea style={{ ...styles.notes, minHeight: 160 }} value={identita.storia} onChange={(e) => aggiorna({ storia: e.target.value })} placeholder="Racconta la storia e il passato del personaggio..." />
