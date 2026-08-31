@@ -25,6 +25,9 @@ const newCharacter = (nome = "") => ({
   slotIncantesimo: Array.from({ length: 9 }, (_, i) => ({ livello: i + 1, totali: 0, usati: 0 })),
   puntiStregoneria: { totali: 0, usati: 0 },
   puntiKi: { totali: 0, usati: 0 },
+  mostraSlotIncantesimi: false,
+  mostraIncantesimiNoti: false,
+  mostraPuntiKi: false,
 });
 
 
