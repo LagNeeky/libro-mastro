@@ -43,6 +43,17 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
     return base + bonusExtra("CA");
   }, [pg.caOverride, pg.scudo, armaturaEquip, modByAb.DES, pg.trattiRazziali, pg.privilegiClasse]);
 
+  const dadiVitaPerTipo = useMemo(() => {
+    const map = {};
+    pg.classi.forEach((ce) => {
+      const c = classi.find((x) => x.id === ce.classeId);
+      if (!c) return;
+      const lvl = Number(ce.livello) || 0;
+      map[c.dado] = (map[c.dado] || 0) + lvl;
+    });
+    return map;
+  }, [pg.classi, classi]);
+
   const iniziativa = modByAb.DES + Number(pg.iniziativaBonus || 0) + bonusExtra("Iniziativa");
 
   const forzaEffettiva = pg.abilita.FOR + (razzaBonus.FOR || 0) + (sottorazzaBonus.FOR || 0);
@@ -217,6 +228,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const aggiornaPuntiStregoneria = (patch) => updatePg({ puntiStregoneria: { ...pg.puntiStregoneria, ...patch } });
   const aggiornaPuntiKi = (patch) => updatePg({ puntiKi: { ...pg.puntiKi, ...patch } });
   const livelloMonaco = pg.classi.filter((ce) => ce.classeId === "monaco").reduce((s, ce) => s + (Number(ce.livello) || 0), 0);
+  const livelloPaladino = pg.classi.filter((ce) => ce.classeId === "paladino").reduce((s, ce) => s + (Number(ce.livello) || 0), 0);
   const sincronizzaKi = () => {
     const totali = livelloMonaco >= 2 ? livelloMonaco : 0;
     updatePg({ puntiKi: { totali, usati: Math.min(pg.puntiKi.usati, totali) } });
@@ -359,6 +371,19 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             <NumInput min={0} max={9999} style={styles.hpBoxInput} value={pg.pfDanniTotale} onCommit={(n) => updatePg({ pfDanniTotale: n })} />
             <button style={styles.smallBtn} onClick={() => updatePg({ pfDanniTotale: 0 })}>Reset (= 0)</button>
           </div>
+          {Object.keys(dadiVitaPerTipo).length > 0 && (
+            <div style={styles.hpBox}>
+              <div style={styles.hpBoxLabel}>Dadi Vita</div>
+              {Object.entries(dadiVitaPerTipo).map(([dado, tot]) => (
+                <div key={dado} style={styles.dadiVitaRow}>
+                  <span style={styles.dadiVitaLabel}>d{dado}</span>
+                  <NumInput min={0} max={tot} style={styles.dadiVitaInput} value={pg.dadiVitaUsati?.[dado] || 0} onCommit={(n) => updatePg({ dadiVitaUsati: { ...pg.dadiVitaUsati, [dado]: n } })} />
+                  <span style={styles.dadiVitaTot}>usati / {tot}</span>
+                </div>
+              ))}
+              <button style={styles.smallBtn} onClick={() => updatePg({ dadiVitaUsati: {} })}>Reset (usati = 0)</button>
+            </div>
+          )}
         </div>
         <div style={styles.hint}>Scrivi un danno e premi Invio: viene tolto prima dai PF Temporanei, poi dagli Attuali, e sommato al totale Danni Subiti. Tutti i box restano modificabili a mano.</div>
 
@@ -385,13 +410,16 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             <div style={styles.sectionLabel}>Tiri Salvezza</div>
             {ABILITIES.map((a) => {
               const comp = pg.tiriCompetenti.includes(a);
-              const val = modByAb[a] + (comp ? profBonus : 0) + bonusExtra(`TS_${a}`);
+              const valAuto = modByAb[a] + (comp ? profBonus : 0) + bonusExtra(`TS_${a}`);
+              const haOverride = pg.tiriSalvezzaOverride && pg.tiriSalvezzaOverride[a] !== undefined && pg.tiriSalvezzaOverride[a] !== null;
+              const val = haOverride ? pg.tiriSalvezzaOverride[a] : valAuto;
               return (
                 <label key={a} style={styles.checkRow}>
                   <input type="checkbox" checked={comp} onChange={() => toggleTiro(a)} />
                   <span style={styles.checkRowLabel}>{ABILITY_LABELS[a]}</span>
-                  <span style={styles.checkRowVal}>{fmt(val)}</span>
-                  <button style={styles.diceBtn} onClick={() => openD20Roll({ title: `Tiro Salvezza su ${ABILITY_LABELS[a]}`, modifier: val, modifierLabel: `${ABILITY_LABELS[a]} ${fmt(modByAb[a])}${comp ? ` + Competenza ${fmt(profBonus)}` : ""}` })}>🎲</button>
+                  <NumInput min={-20} max={30} style={{ ...styles.checkRowValInput, ...(haOverride ? styles.checkRowValOverride : {}) }} value={val} onCommit={(n) => updatePg({ tiriSalvezzaOverride: { ...pg.tiriSalvezzaOverride, [a]: n } })} />
+                  {haOverride && <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => { const next = { ...pg.tiriSalvezzaOverride }; delete next[a]; updatePg({ tiriSalvezzaOverride: next }); }}>⟳</button>}
+                  <button style={styles.diceBtn} onClick={() => openD20Roll({ title: `Tiro Salvezza su ${ABILITY_LABELS[a]}`, modifier: val, modifierLabel: haOverride ? "valore personalizzato" : `${ABILITY_LABELS[a]} ${fmt(modByAb[a])}${comp ? ` + Competenza ${fmt(profBonus)}` : ""}` })}>🎲</button>
                 </label>
               );
             })}
@@ -425,7 +453,9 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             {skills.map((s) => {
               const comp = pg.abilitaCompetenti.includes(s.name);
               const esperto = pg.abilitaEsperte.includes(s.name);
-              const val = modByAb[s.ab] + (esperto ? profBonus * 2 : comp ? profBonus : 0) + bonusExtra(`SKILL_${s.name}`);
+              const valAuto = modByAb[s.ab] + (esperto ? profBonus * 2 : comp ? profBonus : 0) + bonusExtra(`SKILL_${s.name}`);
+              const haOverride = pg.abilitaOverride && pg.abilitaOverride[s.name] !== undefined && pg.abilitaOverride[s.name] !== null;
+              const val = haOverride ? pg.abilitaOverride[s.name] : valAuto;
               return (
                 <label
                   key={s.name}
@@ -442,8 +472,9 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                     <span style={styles.checkboxCol}><input type="checkbox" checked={esperto} onChange={() => toggleEsperto(s.name)} title="Esperto (maestria)" disabled={!comp} style={{ opacity: comp ? 1 : 0.4 }} /></span>
                   </div>
                   <span style={styles.checkRowLabel}>{s.name} <em style={styles.abTag}>({s.ab}){esperto ? " ★E" : ""}</em></span>
-                  <span style={styles.checkRowVal}>{fmt(val)}</span>
-                  <button style={styles.diceBtn} onClick={() => openD20Roll({ title: s.name, modifier: val, modifierLabel: `${ABILITY_LABELS[s.ab]} ${fmt(modByAb[s.ab])}${esperto ? " + Competenza x2 (Esperto)" : comp ? ` + Competenza ${fmt(profBonus)}` : ""}` })}>🎲</button>
+                  <NumInput min={-20} max={30} style={{ ...styles.checkRowValInput, ...(haOverride ? styles.checkRowValOverride : {}) }} value={val} onCommit={(n) => updatePg({ abilitaOverride: { ...pg.abilitaOverride, [s.name]: n } })} />
+                  {haOverride && <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => { const next = { ...pg.abilitaOverride }; delete next[s.name]; updatePg({ abilitaOverride: next }); }}>⟳</button>}
+                  <button style={styles.diceBtn} onClick={() => openD20Roll({ title: s.name, modifier: val, modifierLabel: haOverride ? "valore personalizzato" : `${ABILITY_LABELS[s.ab]} ${fmt(modByAb[s.ab])}${esperto ? " + Competenza x2 (Esperto)" : comp ? ` + Competenza ${fmt(profBonus)}` : ""}` })}>🎲</button>
                   {s.custom && <button style={styles.pgDelBtn} onClick={() => rimuoviAbilita(s.name)}>✕</button>}
                 </label>
               );
@@ -761,6 +792,17 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               <div style={styles.invRow}><div style={styles.invNome}>Resistenze (da razza)</div><div style={styles.invPos}>{razza.resistenze}</div><div style={styles.invSpacer} /></div>
               <div style={styles.invRow}><div style={styles.invNome}>Immunità (da razza)</div><div style={styles.invPos}>{razza.immunita}</div><div style={styles.invSpacer} /></div>
             </>
+          )}
+          {livelloPaladino > 0 && (
+            <div style={styles.invRow}>
+              <div style={styles.invNome}>Imposizione delle Mani <button style={{ ...styles.smallBtn, marginLeft: 8 }} onClick={() => updatePg({ imposizioneMani: { rimanenti: livelloPaladino * 5, totali: livelloPaladino * 5 } })} title="Reimposta al massimo (5 x livello da Paladino)">🔄</button></div>
+              <div style={{ ...styles.invPos, display: "flex", alignItems: "center", gap: 6 }}>
+                <NumInput min={0} max={999} style={styles.invQty} value={pg.imposizioneMani?.rimanenti ?? 0} onCommit={(n) => updatePg({ imposizioneMani: { ...pg.imposizioneMani, rimanenti: n } })} />
+                <span>/</span>
+                <NumInput min={0} max={999} style={styles.invQty} value={pg.imposizioneMani?.totali ?? 0} onCommit={(n) => updatePg({ imposizioneMani: { ...pg.imposizioneMani, totali: n } })} />
+              </div>
+              <div style={styles.invSpacer} />
+            </div>
           )}
           {pg.infoExtra.map((v) => (
             <div key={v.id} style={styles.invRow}>
