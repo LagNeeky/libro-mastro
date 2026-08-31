@@ -599,51 +599,58 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         </div>
         <button style={styles.newPgBtn} onClick={aggiungiValuta}>+ Aggiungi valuta</button>
 
-        <div style={styles.sectionLabel}>Slot Incantesimo & Punti Stregoneria <button style={styles.smallBtn} onClick={sincronizzaSlot}>🔄 Sincronizza da Classe</button></div>
-        <div style={styles.slotTwoColLayout}>
-          <div style={styles.slotGridRows}>
-            <div style={styles.slotGrid}>
-              {pg.slotIncantesimo.filter((s) => s.livello <= 5).map((s) => (
-                <div key={s.livello} style={styles.slotCol}>
-                  <div style={styles.slotColTitle}>{s.livello}° Lvl</div>
-                  <NumInput min={0} max={20} style={styles.slotTotaliInput} value={s.totali} onCommit={(n) => aggiornaSlot(s.livello, { totali: n, usati: Math.min(s.usati, n) })} />
+        {(classiIncantatrici.length > 0 || pg.mostraSlotIncantesimi) ? (
+          <>
+            <div style={styles.sectionLabel}>Slot Incantesimo & Punti Stregoneria <button style={styles.smallBtn} onClick={sincronizzaSlot}>🔄 Sincronizza da Classe</button></div>
+            <div style={styles.slotTwoColLayout}>
+              <div style={styles.slotGridRows}>
+                <div style={styles.slotGrid}>
+                  {pg.slotIncantesimo.filter((s) => s.livello <= 5).map((s) => (
+                    <div key={s.livello} style={styles.slotCol}>
+                      <div style={styles.slotColTitle}>{s.livello}° Lvl</div>
+                      <NumInput min={0} max={20} style={styles.slotTotaliInput} value={s.totali} onCommit={(n) => aggiornaSlot(s.livello, { totali: n, usati: Math.min(s.usati, n) })} />
+                      <div style={styles.slotCheckRow}>
+                        {s.totali > 0 ? Array.from({ length: s.totali }, (_, i) => (
+                          <button key={i} style={{ ...styles.slotCheckbox, ...(i < s.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaSlot(s.livello, { usati: i < s.usati ? i : i + 1 })} title="Segna/togli come usato" />
+                        )) : <span style={styles.slotEmptyHint}>—</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={styles.slotGrid}>
+                  {pg.slotIncantesimo.filter((s) => s.livello >= 6).map((s) => (
+                    <div key={s.livello} style={styles.slotCol}>
+                      <div style={styles.slotColTitle}>{s.livello}° Lvl</div>
+                      <NumInput min={0} max={20} style={styles.slotTotaliInput} value={s.totali} onCommit={(n) => aggiornaSlot(s.livello, { totali: n, usati: Math.min(s.usati, n) })} />
+                      <div style={styles.slotCheckRow}>
+                        {s.totali > 0 ? Array.from({ length: s.totali }, (_, i) => (
+                          <button key={i} style={{ ...styles.slotCheckbox, ...(i < s.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaSlot(s.livello, { usati: i < s.usati ? i : i + 1 })} title="Segna/togli come usato" />
+                        )) : <span style={styles.slotEmptyHint}>—</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={styles.slotStregDivider}>
+                <div style={styles.slotCol}>
+                  <div style={styles.slotColTitle}>Punti Streg.</div>
+                  <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiStregoneria.totali} onCommit={(n) => aggiornaPuntiStregoneria({ totali: n, usati: Math.min(pg.puntiStregoneria.usati, n) })} />
                   <div style={styles.slotCheckRow}>
-                    {s.totali > 0 ? Array.from({ length: s.totali }, (_, i) => (
-                      <button key={i} style={{ ...styles.slotCheckbox, ...(i < s.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaSlot(s.livello, { usati: i < s.usati ? i : i + 1 })} title="Segna/togli come usato" />
+                    {pg.puntiStregoneria.totali > 0 ? Array.from({ length: pg.puntiStregoneria.totali }, (_, i) => (
+                      <button key={i} style={{ ...styles.slotCheckbox, ...(i < pg.puntiStregoneria.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaPuntiStregoneria({ usati: i < pg.puntiStregoneria.usati ? i : i + 1 })} title="Segna/togli come usato" />
                     )) : <span style={styles.slotEmptyHint}>—</span>}
                   </div>
                 </div>
-              ))}
-            </div>
-            <div style={styles.slotGrid}>
-              {pg.slotIncantesimo.filter((s) => s.livello >= 6).map((s) => (
-                <div key={s.livello} style={styles.slotCol}>
-                  <div style={styles.slotColTitle}>{s.livello}° Lvl</div>
-                  <NumInput min={0} max={20} style={styles.slotTotaliInput} value={s.totali} onCommit={(n) => aggiornaSlot(s.livello, { totali: n, usati: Math.min(s.usati, n) })} />
-                  <div style={styles.slotCheckRow}>
-                    {s.totali > 0 ? Array.from({ length: s.totali }, (_, i) => (
-                      <button key={i} style={{ ...styles.slotCheckbox, ...(i < s.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaSlot(s.livello, { usati: i < s.usati ? i : i + 1 })} title="Segna/togli come usato" />
-                    )) : <span style={styles.slotEmptyHint}>—</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={styles.slotStregDivider}>
-            <div style={styles.slotCol}>
-              <div style={styles.slotColTitle}>Punti Streg.</div>
-              <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiStregoneria.totali} onCommit={(n) => aggiornaPuntiStregoneria({ totali: n, usati: Math.min(pg.puntiStregoneria.usati, n) })} />
-              <div style={styles.slotCheckRow}>
-                {pg.puntiStregoneria.totali > 0 ? Array.from({ length: pg.puntiStregoneria.totali }, (_, i) => (
-                  <button key={i} style={{ ...styles.slotCheckbox, ...(i < pg.puntiStregoneria.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaPuntiStregoneria({ usati: i < pg.puntiStregoneria.usati ? i : i + 1 })} title="Segna/togli come usato" />
-                )) : <span style={styles.slotEmptyHint}>—</span>}
               </div>
             </div>
-          </div>
-        </div>
-        <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno).</div>
+            <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno).</div>
+            {!classiIncantatrici.length && <button style={styles.smallBtn} onClick={() => updatePg({ mostraSlotIncantesimi: false })}>Nascondi (nessuna classe incantatrice)</button>}
+          </>
+        ) : (
+          <div style={styles.hint}>Slot Incantesimo & Punti Stregoneria nascosti (nessuna classe incantatrice). <button style={styles.smallBtn} onClick={() => updatePg({ mostraSlotIncantesimi: true })}>Mostra comunque</button></div>
+        )}
 
-        {livelloMonaco > 0 && (
+        {(livelloMonaco > 0 || pg.mostraPuntiKi) && (
           <>
             <div style={styles.sectionLabel}>Punti Ki (Monaco) <button style={styles.smallBtn} onClick={sincronizzaKi}>🔄 Sincronizza da Classe</button></div>
             <div style={styles.hint}>CD Tecnica Ki: {cdKi} (8 + competenza + Saggezza) — i punti si recuperano con un riposo breve o lungo.</div>
@@ -656,25 +663,36 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 )) : <span style={styles.slotEmptyHint}>—</span>}
               </div>
             </div>
+            {livelloMonaco === 0 && <button style={styles.smallBtn} onClick={() => updatePg({ mostraPuntiKi: false })}>Nascondi (nessun livello da Monaco)</button>}
           </>
         )}
+        {livelloMonaco === 0 && !pg.mostraPuntiKi && (
+          <div style={styles.hint}>Punti Ki nascosti (nessun livello da Monaco). <button style={styles.smallBtn} onClick={() => updatePg({ mostraPuntiKi: true })}>Mostra comunque</button></div>
+        )}
 
-        <div style={styles.sectionLabel}>Incantesimi noti {classePrimaria?.caster && <span style={styles.hint}>({ABILITY_LABELS[classePrimaria.caster]}, mod. {fmt(modByAb[classePrimaria.caster])}, CD {8 + profBonus + modByAb[classePrimaria.caster]})</span>}</div>
-        <SearchAddRow query={spellQuery} setQuery={setSpellQuery} results={spellResults} onAdd={(id) => { aggiungiIncantesimo(id); setSpellQuery(""); }} placeholder="Cerca un incantesimo per nome o scuola..." />
-        <div style={styles.itemList}>
-          {pg.incantesimiNoti.map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; return (
-            <div key={id} style={styles.itemRow}>
-              <button style={styles.itemName} onClick={() => openDetail({ type: "incantesimo", data: s })}>{s.nome}{s.custom ? " ★" : ""}</button>
-              <span style={styles.hint}>{s.livello === 0 ? "Trucchetto" : `Livello ${s.livello}`} · {s.scuola}</span>
-              <div style={styles.itemActions}>
-                {s.attacco && <button style={styles.smallBtn} onClick={() => attaccaConIncantesimo(s)}>🎯 TpC</button>}
-                {s.attacco && s.danno && <button style={{ ...styles.smallBtn, ...(critSpells[id] ? styles.smallBtnActive : {}) }} onClick={() => setCritSpells((c) => ({ ...c, [id]: !c[id] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>}
-                {(s.danno || s.cura) && <button style={styles.smallBtn} onClick={() => tiraDannoIncantesimo(id, s)}>{s.cura ? "💚 Cura" : `💥 Danno${critSpells[id] ? " (crit!)" : ""}`}</button>}
-                <button style={styles.smallDangerBtn} onClick={() => rimuoviIncantesimo(id)}>Rimuovi</button>
-              </div>
+        {(classiIncantatrici.length > 0 || pg.mostraIncantesimiNoti) ? (
+          <>
+            <div style={styles.sectionLabel}>Incantesimi noti {classePrimaria?.caster && <span style={styles.hint}>({ABILITY_LABELS[classePrimaria.caster]}, mod. {fmt(modByAb[classePrimaria.caster])}, CD {8 + profBonus + modByAb[classePrimaria.caster]})</span>}</div>
+            <SearchAddRow query={spellQuery} setQuery={setSpellQuery} results={spellResults} onAdd={(id) => { aggiungiIncantesimo(id); setSpellQuery(""); }} placeholder="Cerca un incantesimo per nome o scuola..." />
+            <div style={styles.itemList}>
+              {pg.incantesimiNoti.map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; return (
+                <div key={id} style={styles.itemRow}>
+                  <button style={styles.itemName} onClick={() => openDetail({ type: "incantesimo", data: s })}>{s.nome}{s.custom ? " ★" : ""}</button>
+                  <span style={styles.hint}>{s.livello === 0 ? "Trucchetto" : `Livello ${s.livello}`} · {s.scuola}</span>
+                  <div style={styles.itemActions}>
+                    {s.attacco && <button style={styles.smallBtn} onClick={() => attaccaConIncantesimo(s)}>🎯 TpC</button>}
+                    {s.attacco && s.danno && <button style={{ ...styles.smallBtn, ...(critSpells[id] ? styles.smallBtnActive : {}) }} onClick={() => setCritSpells((c) => ({ ...c, [id]: !c[id] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>}
+                    {(s.danno || s.cura) && <button style={styles.smallBtn} onClick={() => tiraDannoIncantesimo(id, s)}>{s.cura ? "💚 Cura" : `💥 Danno${critSpells[id] ? " (crit!)" : ""}`}</button>}
+                    <button style={styles.smallDangerBtn} onClick={() => rimuoviIncantesimo(id)}>Rimuovi</button>
+                  </div>
+                </div>
+              ); })}
             </div>
-          ); })}
-        </div>
+            {!classiIncantatrici.length && <button style={styles.smallBtn} onClick={() => updatePg({ mostraIncantesimiNoti: false })}>Nascondi (nessuna classe incantatrice)</button>}
+          </>
+        ) : (
+          <div style={styles.hint}>Incantesimi noti nascosti (nessuna classe incantatrice). <button style={styles.smallBtn} onClick={() => updatePg({ mostraIncantesimiNoti: true })}>Mostra comunque</button></div>
+        )}
 
         <div style={styles.sectionLabel}>Talenti</div>
         <div style={styles.itemList}>
