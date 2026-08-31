@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { styles, palette } from '../styles.js';
 import { ABILITIES, ABILITY_LABELS, mod, fmt, zeroBonus, uid, PROF_BONUS_BY_LEVEL, nomeFonte, APPLICA_A_OPTIONS, MAGICO_OPTIONS, RARITA_OPTIONS } from '../utils/helpers.js';
-import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello } from '../utils/spellSlots.js';
+import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, TERZO_CASTER_SOTTOCLASSI } from '../utils/spellSlots.js';
 import { ComboInput, NumInput, AutoTextarea, StatBox, SearchAddRow } from './shared.jsx';
 
 
@@ -20,10 +20,15 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const livelloTotale = pg.classi.reduce((s, c) => s + Number(c.livello || 0), 0) || 1;
   const profBonus = PROF_BONUS_BY_LEVEL(livelloTotale);
   const classePrimaria = classi.find((c) => c.id === pg.classi[0]?.classeId);
-  const classiIncantatrici = pg.classi
+  const classiIncantatriciBase = pg.classi
     .map((ce) => classi.find((c) => c.id === ce.classeId))
     .filter((c) => c && c.caster)
     .filter((c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx);
+  const classiTerzoCaster = pg.classi
+    .filter((ce) => TERZO_CASTER_SOTTOCLASSI.includes(ce.sottoclasseId))
+    .map((ce) => { const c = classi.find((x) => x.id === ce.classeId); const sc = sottoclassi.find((x) => x.id === ce.sottoclasseId); return c ? { id: `${c.id}_terzo`, nome: `${c.nome} (${sc ? sc.nome : "incantatore a un terzo"})`, caster: "INT" } : null; })
+    .filter(Boolean);
+  const classiIncantatrici = [...classiIncantatriciBase, ...classiTerzoCaster];
 
   const bonusExtra = (tipo) => [...pg.trattiRazziali, ...pg.privilegiClasse, ...pg.talenti].filter((e) => e.applicaA === tipo).reduce((s, e) => s + Number(e.valore || 0), 0);
 
@@ -239,14 +244,30 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
     let livelloCombinato = 0;
     let warlockLivello = 0;
     let stregoneLivello = 0;
+    // Un personaggio e' "multiclasse" ai fini degli incantesimi se ha piu' di una classe con livelli,
+    // Warlock incluso nel conteggio anche se la sua Magia del Patto resta sempre separata.
+    const numClassiConLivello = pg.classi.filter((ce) => (Number(ce.livello) || 0) > 0).length;
+    const isMulticlasse = numClassiConLivello > 1;
     pg.classi.forEach((ce) => {
       const c = classi.find((x) => x.id === ce.classeId);
       if (!c) return;
       const lvl = Number(ce.livello) || 0;
       if (c.id === "warlock") { warlockLivello += lvl; return; }
       if (c.id === "stregone") stregoneLivello += lvl;
-      if (c.progressione === "pieno") livelloCombinato += lvl;
-      else if (c.progressione === "mezzo") livelloCombinato += Math.floor(lvl / 2);
+      const isTerzoCaster = TERZO_CASTER_SOTTOCLASSI.includes(ce.sottoclasseId);
+      if (isMulticlasse) {
+        // Regola ufficiale di multiclasse: si sommano i contributi arrotondati per difetto.
+        if (c.progressione === "pieno") livelloCombinato += lvl;
+        else if (c.progressione === "mezzo") livelloCombinato += Math.floor(lvl / 2);
+        else if (isTerzoCaster) livelloCombinato += Math.floor(lvl / 3);
+      } else {
+        // Personaggio non multiclasse: si usa la tabella diretta della propria classe,
+        // che NON coincide con la formula di multiclasse (arrotonda per eccesso, non per difetto,
+        // e non concede nulla prima del livello in cui la classe ottiene la magia).
+        if (c.progressione === "pieno") livelloCombinato += lvl;
+        else if (c.progressione === "mezzo") livelloCombinato += lvl < 2 ? 0 : Math.ceil(lvl / 2);
+        else if (isTerzoCaster) livelloCombinato += lvl < 3 ? 0 : Math.ceil(lvl / 3);
+      }
     });
     livelloCombinato = Math.min(20, livelloCombinato);
     const rigaBase = TABELLA_SLOT_PIENI[livelloCombinato] || TABELLA_SLOT_PIENI[0];
