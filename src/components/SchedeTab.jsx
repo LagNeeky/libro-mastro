@@ -637,8 +637,8 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           {pg.talenti.map((t) => (
             <div key={t.id} style={styles.abilitaExtraRow}>
               <div style={{ flex: 1 }}>
-                <AutoTextarea style={styles.invNome} placeholder="Nome talento" value={t.nome} onChange={(e) => aggiornaTalento(t.id, { nome: e.target.value })} />
-                <AutoTextarea style={{ ...styles.invNome, marginTop: 4 }} placeholder="Descrizione" value={t.desc} onChange={(e) => aggiornaTalento(t.id, { desc: e.target.value })} />
+                <AutoTextarea style={{ ...styles.invNome, display: "block", width: "100%", marginBottom: 8 }} placeholder="Nome talento" value={t.nome} onChange={(e) => aggiornaTalento(t.id, { nome: e.target.value })} />
+                <AutoTextarea style={{ ...styles.invNome, display: "block", width: "100%" }} placeholder="Descrizione" value={t.desc} onChange={(e) => aggiornaTalento(t.id, { desc: e.target.value })} />
               </div>
               <select style={styles.applicaASelect} value={t.applicaA} onChange={(e) => aggiornaTalento(t.id, { applicaA: e.target.value })}>
                 {APPLICA_A_OPTIONS(skills).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
