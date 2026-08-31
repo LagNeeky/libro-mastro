@@ -22,13 +22,11 @@ export async function saveState(key, value) {
 }
 
 // Unisce il catalogo ufficiale (aggiornato con l'app) con i contenuti homebrew
-// gia' salvati dal giocatore: aggiunge le voci ufficiali mancanti (es. dopo un
-// aggiornamento dell'app) senza mai toccare le voci homebrew esistenti.
+// gia' salvati dal giocatore: il contenuto ufficiale viene sempre sostituito con
+// l'ultima versione portata dall'app (cosi' le correzioni/aggiunte arrivano a tutti),
+// mentre le voci homebrew del giocatore (custom: true) restano sempre intatte.
 export function mergeOfficialData(stored, defaults) {
   if (!Array.isArray(stored)) return defaults;
-  const byId = new Map(stored.map((item) => [item.id, item]));
-  defaults.forEach((item) => {
-    if (!byId.has(item.id)) byId.set(item.id, item);
-  });
-  return Array.from(byId.values());
+  const custom = stored.filter((item) => item.custom);
+  return [...defaults, ...custom];
 }
