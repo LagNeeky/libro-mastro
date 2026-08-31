@@ -343,8 +343,8 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             return (
               <div key={a} style={styles.abilityCard}>
                 <div style={styles.abilityName}>{ABILITY_LABELS[a]}</div>
-                <NumInput min={1} max={30} style={styles.abilityScoreInput} value={pg.abilita[a]} onCommit={(n) => updatePg({ abilita: { ...pg.abilita, [a]: n } })} />
-                {bonusRazza !== 0 && <div style={styles.hint}>Base {pg.abilita[a]} {fmt(bonusRazza)} razza = Tot. {pg.abilita[a] + bonusRazza}</div>}
+                <NumInput min={1} max={30} style={styles.abilityScoreInput} value={pg.abilita[a] + bonusRazza} onCommit={(n) => updatePg({ abilita: { ...pg.abilita, [a]: n - bonusRazza } })} />
+                {bonusRazza !== 0 && <div style={styles.hint}>Include {fmt(bonusRazza)} di bonus razza</div>}
                 <div style={styles.abilityModRow}>
                   <span style={styles.abilityMod}>{fmt(modByAb[a])}</span>
                   <button style={styles.diceBtn} onClick={() => openD20Roll({ title: `Prova di ${ABILITY_LABELS[a]}`, modifier: modByAb[a], modifierLabel: `${ABILITY_LABELS[a]} ${fmt(modByAb[a])}` })}>🎲</button>
