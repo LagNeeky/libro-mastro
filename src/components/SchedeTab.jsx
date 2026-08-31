@@ -599,9 +599,11 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         </div>
         <button style={styles.newPgBtn} onClick={aggiungiValuta}>+ Aggiungi valuta</button>
 
+        <div style={{ ...styles.sectionDivider, marginBottom: 16 }} />
+
         {(classiIncantatrici.length > 0 || pg.mostraSlotIncantesimi) ? (
           <>
-            <div style={styles.sectionLabel}>Slot Incantesimo & Punti Stregoneria <button style={styles.smallBtn} onClick={sincronizzaSlot}>🔄 Sincronizza da Classe</button></div>
+            <div style={{ ...styles.sectionLabel, borderTop: "none", paddingTop: 0, marginTop: 0 }}>Slot Incantesimo & Punti Stregoneria <button style={styles.smallBtn} onClick={sincronizzaSlot}>🔄 Sincronizza da Classe</button></div>
             <div style={styles.slotTwoColLayout}>
               <div style={styles.slotGridRows}>
                 <div style={styles.slotGrid}>
@@ -650,26 +652,6 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           <div style={styles.hint}>Slot Incantesimo & Punti Stregoneria nascosti (nessuna classe incantatrice). <button style={styles.smallBtn} onClick={() => updatePg({ mostraSlotIncantesimi: true })}>Mostra comunque</button></div>
         )}
 
-        {(livelloMonaco > 0 || pg.mostraPuntiKi) && (
-          <>
-            <div style={styles.sectionLabel}>Punti Ki (Monaco) <button style={styles.smallBtn} onClick={sincronizzaKi}>🔄 Sincronizza da Classe</button></div>
-            <div style={styles.hint}>CD Tecnica Ki: {cdKi} (8 + competenza + Saggezza) — i punti si recuperano con un riposo breve o lungo.</div>
-            <div style={styles.slotCol}>
-              <div style={styles.slotColTitle}>Punti Ki</div>
-              <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiKi.totali} onCommit={(n) => aggiornaPuntiKi({ totali: n, usati: Math.min(pg.puntiKi.usati, n) })} />
-              <div style={styles.slotCheckRow}>
-                {pg.puntiKi.totali > 0 ? Array.from({ length: pg.puntiKi.totali }, (_, i) => (
-                  <button key={i} style={{ ...styles.slotCheckbox, ...(i < pg.puntiKi.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaPuntiKi({ usati: i < pg.puntiKi.usati ? i : i + 1 })} title="Segna/togli come usato" />
-                )) : <span style={styles.slotEmptyHint}>—</span>}
-              </div>
-            </div>
-            {livelloMonaco === 0 && <button style={styles.smallBtn} onClick={() => updatePg({ mostraPuntiKi: false })}>Nascondi (nessun livello da Monaco)</button>}
-          </>
-        )}
-        {livelloMonaco === 0 && !pg.mostraPuntiKi && (
-          <div style={styles.hint}>Punti Ki nascosti (nessun livello da Monaco). <button style={styles.smallBtn} onClick={() => updatePg({ mostraPuntiKi: true })}>Mostra comunque</button></div>
-        )}
-
         {(classiIncantatrici.length > 0 || pg.mostraIncantesimiNoti) ? (
           <>
             <div style={styles.sectionLabel}>Incantesimi noti {classePrimaria?.caster && <span style={styles.hint}>({ABILITY_LABELS[classePrimaria.caster]}, mod. {fmt(modByAb[classePrimaria.caster])}, CD {8 + profBonus + modByAb[classePrimaria.caster]})</span>}</div>
@@ -692,6 +674,26 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           </>
         ) : (
           <div style={styles.hint}>Incantesimi noti nascosti (nessuna classe incantatrice). <button style={styles.smallBtn} onClick={() => updatePg({ mostraIncantesimiNoti: true })}>Mostra comunque</button></div>
+        )}
+
+        {(livelloMonaco > 0 || pg.mostraPuntiKi) && (
+          <>
+            <div style={styles.sectionLabel}>Punti Ki (Monaco) <button style={styles.smallBtn} onClick={sincronizzaKi}>🔄 Sincronizza da Classe</button></div>
+            <div style={styles.hint}>CD Tecnica Ki: {cdKi} (8 + competenza + Saggezza) — i punti si recuperano con un riposo breve o lungo.</div>
+            <div style={styles.slotCol}>
+              <div style={styles.slotColTitle}>Punti Ki</div>
+              <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiKi.totali} onCommit={(n) => aggiornaPuntiKi({ totali: n, usati: Math.min(pg.puntiKi.usati, n) })} />
+              <div style={styles.slotCheckRow}>
+                {pg.puntiKi.totali > 0 ? Array.from({ length: pg.puntiKi.totali }, (_, i) => (
+                  <button key={i} style={{ ...styles.slotCheckbox, ...(i < pg.puntiKi.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaPuntiKi({ usati: i < pg.puntiKi.usati ? i : i + 1 })} title="Segna/togli come usato" />
+                )) : <span style={styles.slotEmptyHint}>—</span>}
+              </div>
+            </div>
+            {livelloMonaco === 0 && <button style={styles.smallBtn} onClick={() => updatePg({ mostraPuntiKi: false })}>Nascondi (nessun livello da Monaco)</button>}
+          </>
+        )}
+        {livelloMonaco === 0 && !pg.mostraPuntiKi && (
+          <div style={styles.hint}>Punti Ki nascosti (nessun livello da Monaco). <button style={styles.smallBtn} onClick={() => updatePg({ mostraPuntiKi: true })}>Mostra comunque</button></div>
         )}
 
         <div style={styles.sectionLabel}>Talenti</div>
