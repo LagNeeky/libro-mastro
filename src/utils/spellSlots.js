@@ -20,4 +20,7 @@ const TABELLA_PATTO_WARLOCK = [
 // Punti Stregoneria dello Stregone: pari al livello classe dal 2° in su.
 const puntiStregoneriaPerLivello = (lvl) => (lvl >= 2 ? lvl : 0);
 
-export { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello };
+// Sottoclassi che concedono lancio di incantesimi "a un terzo" (Cavaliere Magico, Trickster Arcano).
+const TERZO_CASTER_SOTTOCLASSI = ["cavaliere_magico", "trickster_arcano"];
+
+export { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, TERZO_CASTER_SOTTOCLASSI };
