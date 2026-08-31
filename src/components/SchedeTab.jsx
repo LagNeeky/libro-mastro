@@ -646,7 +646,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               </div>
             </div>
             <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno).</div>
-            {!classiIncantatrici.length && <button style={styles.smallBtn} onClick={() => updatePg({ mostraSlotIncantesimi: false })}>Nascondi (nessuna classe incantatrice)</button>}
+            {!classiIncantatrici.length && <button style={{ ...styles.smallBtn, marginTop: 10 }} onClick={() => updatePg({ mostraSlotIncantesimi: false })}>Nascondi (nessuna classe incantatrice)</button>}
           </>
         ) : (
           <div style={styles.hint}>Slot Incantesimo & Punti Stregoneria nascosti (nessuna classe incantatrice). <button style={styles.smallBtn} onClick={() => updatePg({ mostraSlotIncantesimi: true })}>Mostra comunque</button></div>
@@ -670,7 +670,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 </div>
               ); })}
             </div>
-            {!classiIncantatrici.length && <button style={styles.smallBtn} onClick={() => updatePg({ mostraIncantesimiNoti: false })}>Nascondi (nessuna classe incantatrice)</button>}
+            {!classiIncantatrici.length && <button style={{ ...styles.smallBtn, marginTop: 10 }} onClick={() => updatePg({ mostraIncantesimiNoti: false })}>Nascondi (nessuna classe incantatrice)</button>}
           </>
         ) : (
           <div style={styles.hint}>Incantesimi noti nascosti (nessuna classe incantatrice). <button style={styles.smallBtn} onClick={() => updatePg({ mostraIncantesimiNoti: true })}>Mostra comunque</button></div>
@@ -689,7 +689,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 )) : <span style={styles.slotEmptyHint}>—</span>}
               </div>
             </div>
-            {livelloMonaco === 0 && <button style={styles.smallBtn} onClick={() => updatePg({ mostraPuntiKi: false })}>Nascondi (nessun livello da Monaco)</button>}
+            {livelloMonaco === 0 && <button style={{ ...styles.smallBtn, marginTop: 10 }} onClick={() => updatePg({ mostraPuntiKi: false })}>Nascondi (nessun livello da Monaco)</button>}
           </>
         )}
         {livelloMonaco === 0 && !pg.mostraPuntiKi && (
