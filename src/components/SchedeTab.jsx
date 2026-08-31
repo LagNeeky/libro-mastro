@@ -32,12 +32,31 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const caCalcolata = useMemo(() => {
     if (pg.caOverride !== null && pg.caOverride !== undefined && pg.caOverride !== "") return Number(pg.caOverride);
     let base = 10 + modByAb.DES;
-    if (armaturaEquip) { const cap = armaturaEquip.maxDex === null ? modByAb.DES : Math.min(modByAb.DES, armaturaEquip.maxDex); base = armaturaEquip.ca + cap; }
+    if (armaturaEquip) {
+      let capDes;
+      if (armaturaEquip.maxDex === null) capDes = modByAb.DES; // leggera: bonus di Destrezza pieno, positivo o negativo
+      else if (armaturaEquip.maxDex === 0) capDes = 0; // pesante: la Destrezza non si applica mai, nemmeno se negativa
+      else capDes = Math.min(modByAb.DES, armaturaEquip.maxDex); // media: bonus limitato al tetto, ma un malus negativo si applica comunque per intero
+      base = armaturaEquip.ca + capDes;
+    }
     if (pg.scudo) base += 2;
     return base + bonusExtra("CA");
   }, [pg.caOverride, pg.scudo, armaturaEquip, modByAb.DES, pg.trattiRazziali, pg.privilegiClasse]);
 
   const iniziativa = modByAb.DES + Number(pg.iniziativaBonus || 0) + bonusExtra("Iniziativa");
+
+  const forzaEffettiva = pg.abilita.FOR + (razzaBonus.FOR || 0) + (sottorazzaBonus.FOR || 0);
+  const velocitaBase = razza?.velocita || "9 m";
+  const richiedeForzaNonSoddisfatta = !!(armaturaEquip && armaturaEquip.forzaMin && forzaEffettiva < armaturaEquip.forzaMin);
+  const senzaCompetenzaArmatura = !!(armaturaEquip && pg.compArmature && !pg.compArmature[armaturaEquip.tipo]);
+  const velocitaCalcolata = useMemo(() => {
+    if (pg.velocitaOverride) return pg.velocitaOverride;
+    if (!richiedeForzaNonSoddisfatta) return velocitaBase;
+    const numero = parseFloat(String(velocitaBase).replace(",", "."));
+    if (isNaN(numero)) return velocitaBase;
+    const ridotta = Math.max(0, numero - 3);
+    return `${ridotta}`.replace(".", ",") + " m";
+  }, [pg.velocitaOverride, velocitaBase, richiedeForzaNonSoddisfatta]);
 
   const toggleTiro = (ab) => updatePg({ tiriCompetenti: pg.tiriCompetenti.includes(ab) ? pg.tiriCompetenti.filter((x) => x !== ab) : [...pg.tiriCompetenti, ab] });
   const toggleAbilita = (nome) => {
@@ -122,9 +141,9 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
     const out = [];
     pg.classi.forEach((ce) => {
       const c = classi.find((x) => x.id === ce.classeId);
-      if (c) c.tratti.forEach((t) => out.push({ ...t, fonte: `Classe (${c.nome})` }));
+      if (c) c.tratti.filter((t) => (t.livello || 1) <= (Number(ce.livello) || 0)).forEach((t) => out.push({ ...t, fonte: `Classe (${c.nome})` }));
       const sc = sottoclassi.find((x) => x.id === ce.sottoclasseId);
-      if (sc) sc.tratti.forEach((t) => out.push({ ...t, fonte: `Sottoclasse (${sc.nome})` }));
+      if (sc) sc.tratti.filter((t) => (t.livello || 1) <= (Number(ce.livello) || 0)).forEach((t) => out.push({ ...t, fonte: `Sottoclasse (${sc.nome})` }));
     });
     return out;
   };
@@ -196,6 +215,13 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
 
   const aggiornaSlot = (livello, patch) => updatePg({ slotIncantesimo: pg.slotIncantesimo.map((s) => (s.livello === livello ? { ...s, ...patch } : s)) });
   const aggiornaPuntiStregoneria = (patch) => updatePg({ puntiStregoneria: { ...pg.puntiStregoneria, ...patch } });
+  const aggiornaPuntiKi = (patch) => updatePg({ puntiKi: { ...pg.puntiKi, ...patch } });
+  const livelloMonaco = pg.classi.filter((ce) => ce.classeId === "monaco").reduce((s, ce) => s + (Number(ce.livello) || 0), 0);
+  const sincronizzaKi = () => {
+    const totali = livelloMonaco >= 2 ? livelloMonaco : 0;
+    updatePg({ puntiKi: { totali, usati: Math.min(pg.puntiKi.usati, totali) } });
+  };
+  const cdKi = 8 + profBonus + modByAb.SAG;
 
   const sincronizzaSlot = () => {
     let livelloCombinato = 0;
@@ -301,10 +327,10 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           <StatBox label="Iniziativa" value={fmt(iniziativa)} sub="DES + bonus manuale + extra">
             <NumInput min={-10} max={10} style={styles.smallNumInput} value={pg.iniziativaBonus} onCommit={(n) => updatePg({ iniziativaBonus: n })} />
           </StatBox>
-          <StatBox label="Classe Armatura" value={caCalcolata} sub={armaturaEquip ? armaturaEquip.nome : "nessuna armatura indossata"}>
+          <StatBox label="Classe Armatura" value={caCalcolata} sub={senzaCompetenzaArmatura ? `⚠ Nessuna competenza con ${armaturaEquip.nome}: svantaggio a Forza/Destrezza, TS e attacchi; non puoi lanciare incantesimi` : (armaturaEquip ? armaturaEquip.nome : "nessuna armatura indossata")}>
             <input placeholder="override" style={styles.smallNumInput} value={pg.caOverride ?? ""} onChange={(e) => updatePg({ caOverride: e.target.value === "" ? null : e.target.value })} />
           </StatBox>
-          <StatBox label="Velocità" value={pg.velocitaOverride || razza?.velocita || "9 m"} sub={razza ? razza.nome : "valore predefinito"}>
+          <StatBox label="Velocità" value={velocitaCalcolata} sub={richiedeForzaNonSoddisfatta && !pg.velocitaOverride ? `-3 m: Forza insufficiente per ${armaturaEquip.nome}` : (razza ? razza.nome : "valore predefinito")}>
             <input placeholder="override" style={styles.smallNumInput} value={pg.velocitaOverride ?? ""} onChange={(e) => updatePg({ velocitaOverride: e.target.value === "" ? null : e.target.value })} />
           </StatBox>
           <label style={{ ...styles.statBox, ...styles.checkField, justifyContent: "center" }}><input type="checkbox" checked={pg.scudo} onChange={(e) => updatePg({ scudo: e.target.checked })} />Scudo (+2 CA)</label>
@@ -488,16 +514,17 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.sectionLabel}>Equipaggiamento — Armi</div>
         <SearchAddRow query={wQuery} setQuery={setWQuery} results={wResults} onAdd={(id) => { aggiungiArma(id); setWQuery(""); }} placeholder="Cerca un'arma da aggiungere..." />
         <div style={styles.itemList}>
-          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; return (
+          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; const senzaCompetenzaArma = w.classi && w.classi.length > 0 && !pg.classi.some((ce) => w.classi.includes(ce.classeId)); return (
             <div key={instId} style={styles.itemRow}>
               <button style={styles.itemName} onClick={() => openDetail({ type: "arma", data: w })}>{w.nome}{w.custom ? " ★" : ""}</button>
-              <span style={styles.hint}>{w.danno} {w.tipoDanno}</span>
+              <span style={styles.hint}>{w.danno} {w.tipoDanno}{senzaCompetenzaArma ? " · ⚠ nessuna classe ha competenza con quest'arma (il bonus di competenza non dovrebbe applicarsi)" : ""}</span>
               <ComboInput value={magico} onChangeText={(t) => aggiornaCampoArma(instId, { magico: t })} options={MAGICO_OPTIONS} datalistId={`dl-magico-${instId}`} placeholder="Magico?" style={styles.magicSelect} />
               <ComboInput value={rarita} onChangeText={(t) => aggiornaCampoArma(instId, { rarita: t })} options={RARITA_OPTIONS} datalistId={`dl-rarita-${instId}`} placeholder="Rarità" style={styles.magicSelect} />
               <label style={styles.modLabel}>Mod. TpC<NumInput min={-20} max={20} style={styles.modInput} value={modTpc || 0} onCommit={(n) => aggiornaCampoArma(instId, { modTpc: n })} /></label>
               <label style={styles.modLabel}>Mod. Danno<NumInput min={-20} max={20} style={styles.modInput} value={modDanno || 0} onCommit={(n) => aggiornaCampoArma(instId, { modDanno: n })} /></label>
               <div style={{ ...styles.itemActions, marginLeft: "auto" }}>
                 <button style={styles.smallBtn} onClick={() => attaccaConArma(w, modTpc)}>🎯 TpC</button>
+                <button style={{ ...styles.smallBtn, ...(critWeapons[instId] ? styles.smallBtnActive : {}) }} onClick={() => setCritWeapons((c) => ({ ...c, [instId]: !c[instId] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>
                 <button style={styles.smallBtn} onClick={() => tiraDannoArma(instId, w, modDanno)}>💥 Danno{critWeapons[instId] ? " (crit!)" : ""}</button>
                 <button style={styles.removeX} onClick={() => rimuoviArma(instId)}>✕</button>
               </div>
@@ -616,6 +643,22 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         </div>
         <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno).</div>
 
+        {livelloMonaco > 0 && (
+          <>
+            <div style={styles.sectionLabel}>Punti Ki (Monaco) <button style={styles.smallBtn} onClick={sincronizzaKi}>🔄 Sincronizza da Classe</button></div>
+            <div style={styles.hint}>CD Tecnica Ki: {cdKi} (8 + competenza + Saggezza) — i punti si recuperano con un riposo breve o lungo.</div>
+            <div style={styles.slotCol}>
+              <div style={styles.slotColTitle}>Punti Ki</div>
+              <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiKi.totali} onCommit={(n) => aggiornaPuntiKi({ totali: n, usati: Math.min(pg.puntiKi.usati, n) })} />
+              <div style={styles.slotCheckRow}>
+                {pg.puntiKi.totali > 0 ? Array.from({ length: pg.puntiKi.totali }, (_, i) => (
+                  <button key={i} style={{ ...styles.slotCheckbox, ...(i < pg.puntiKi.usati ? styles.slotCheckboxUsed : {}) }} onClick={() => aggiornaPuntiKi({ usati: i < pg.puntiKi.usati ? i : i + 1 })} title="Segna/togli come usato" />
+                )) : <span style={styles.slotEmptyHint}>—</span>}
+              </div>
+            </div>
+          </>
+        )}
+
         <div style={styles.sectionLabel}>Incantesimi noti {classePrimaria?.caster && <span style={styles.hint}>({ABILITY_LABELS[classePrimaria.caster]}, mod. {fmt(modByAb[classePrimaria.caster])}, CD {8 + profBonus + modByAb[classePrimaria.caster]})</span>}</div>
         <SearchAddRow query={spellQuery} setQuery={setSpellQuery} results={spellResults} onAdd={(id) => { aggiungiIncantesimo(id); setSpellQuery(""); }} placeholder="Cerca un incantesimo per nome o scuola..." />
         <div style={styles.itemList}>
@@ -625,6 +668,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               <span style={styles.hint}>{s.livello === 0 ? "Trucchetto" : `Livello ${s.livello}`} · {s.scuola}</span>
               <div style={styles.itemActions}>
                 {s.attacco && <button style={styles.smallBtn} onClick={() => attaccaConIncantesimo(s)}>🎯 TpC</button>}
+                {s.attacco && s.danno && <button style={{ ...styles.smallBtn, ...(critSpells[id] ? styles.smallBtnActive : {}) }} onClick={() => setCritSpells((c) => ({ ...c, [id]: !c[id] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>}
                 {(s.danno || s.cura) && <button style={styles.smallBtn} onClick={() => tiraDannoIncantesimo(id, s)}>{s.cura ? "💚 Cura" : `💥 Danno${critSpells[id] ? " (crit!)" : ""}`}</button>}
                 <button style={styles.smallDangerBtn} onClick={() => rimuoviIncantesimo(id)}>Rimuovi</button>
               </div>
