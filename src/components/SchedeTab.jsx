@@ -62,7 +62,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const iniziativa = modByAb.DES + Number(pg.iniziativaBonus || 0) + bonusExtra("Iniziativa");
 
   const forzaEffettiva = pg.abilita.FOR + (razzaBonus.FOR || 0) + (sottorazzaBonus.FOR || 0);
-  const velocitaBase = razza?.velocita || "9 m";
+  const velocitaBase = sottorazza?.velocita || razza?.velocita || "9 m";
   const richiedeForzaNonSoddisfatta = !!(armaturaEquip && armaturaEquip.forzaMin && forzaEffettiva < armaturaEquip.forzaMin);
   const senzaCompetenzaArmatura = !!(armaturaEquip && pg.compArmature && !pg.compArmature[armaturaEquip.tipo]);
   const velocitaCalcolata = useMemo(() => {
@@ -363,7 +363,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           <StatBox label="Classe Armatura" value={caCalcolata} sub={senzaCompetenzaArmatura ? `⚠ Nessuna competenza con ${armaturaEquip.nome}: svantaggio a Forza/Destrezza, TS e attacchi; non puoi lanciare incantesimi` : (armaturaEquip ? armaturaEquip.nome : "nessuna armatura indossata")}>
             <input placeholder="override" style={styles.smallNumInput} value={pg.caOverride ?? ""} onChange={(e) => updatePg({ caOverride: e.target.value === "" ? null : e.target.value })} />
           </StatBox>
-          <StatBox label="Velocità" value={velocitaCalcolata} sub={richiedeForzaNonSoddisfatta && !pg.velocitaOverride ? `-3 m: Forza insufficiente per ${armaturaEquip.nome}` : (razza ? razza.nome : "valore predefinito")}>
+          <StatBox label="Velocità" value={velocitaCalcolata} sub={richiedeForzaNonSoddisfatta && !pg.velocitaOverride ? `-3 m: Forza insufficiente per ${armaturaEquip.nome}` : (sottorazza?.velocita ? sottorazza.nome : razza ? razza.nome : "valore predefinito")}>
             <input placeholder="override" style={styles.smallNumInput} value={pg.velocitaOverride ?? ""} onChange={(e) => updatePg({ velocitaOverride: e.target.value === "" ? null : e.target.value })} />
           </StatBox>
           <label style={{ ...styles.statBox, ...styles.checkField, justifyContent: "center" }}><input type="checkbox" checked={pg.scudo} onChange={(e) => updatePg({ scudo: e.target.checked })} />Scudo (+2 CA)</label>
