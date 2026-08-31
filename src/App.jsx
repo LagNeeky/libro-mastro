@@ -171,7 +171,7 @@ export default function LibroMastro() {
         {tab === "razze" && <RazzeTab razze={razze} setRazze={setRazze} sottorazze={sottorazze} setSottorazze={setSottorazze} openDetail={setDetail} />}
         {tab === "classi" && <ClassiTab classi={classi} setClassi={setClassi} sottoclassi={sottoclassi} setSottoclassi={setSottoclassi} openDetail={setDetail} />}
         {tab === "trasfondi" && <TrasfondiTab backgrounds={backgrounds} setBackgrounds={setBackgrounds} openDetail={setDetail} />}
-        {tab === "talenti_catalogo" && <TalentiCatalogoTab talentiCatalogo={talentiCatalogo} setTalentiCatalogo={setTalentiCatalogo} openDetail={setDetail} />}
+        {tab === "talenti_catalogo" && <TalentiCatalogoTab talentiCatalogo={talentiCatalogo} setTalentiCatalogo={setTalentiCatalogo} openDetail={setDetail} pg={pg} updatePg={updatePg} />}
         {tab === "incantesimi" && <IncantesimiTab classi={classi} incantesimi={incantesimi} setIncantesimi={setIncantesimi} openDetail={setDetail} pg={pg} updatePg={updatePg} />}
         {tab === "equip" && <EquipTab classi={classi} armi={armi} setArmi={setArmi} armature={armature} setArmature={setArmature} accessori={accessori} setAccessori={setAccessori} openDetail={setDetail} pg={pg} updatePg={updatePg} />}
         {tab === "appunti" && <AppuntiTab appunti={appunti} setAppunti={setAppunti} />}
