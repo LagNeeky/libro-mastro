@@ -24,6 +24,7 @@ const newCharacter = (nome = "") => ({
   // ogni talento può avere: id, catalogoId (se preso dal catalogo Talenti), nome, desc, applicaA, valore
   slotIncantesimo: Array.from({ length: 9 }, (_, i) => ({ livello: i + 1, totali: 0, usati: 0 })),
   puntiStregoneria: { totali: 0, usati: 0 },
+  puntiKi: { totali: 0, usati: 0 },
 });
 
 
