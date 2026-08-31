@@ -21,6 +21,7 @@ const newCharacter = (nome = "") => ({
   identita: { immagineUrl: "", eta: "", altezza: "", peso: "", occhi: "", capelli: "", carnagione: "", segniParticolari: "", aspettoFisico: "", tratti: "", ideali: "", legami: "", difetti: "", storia: "" },
   compArmature: { leggera: false, media: false, pesante: false }, compArmi: { improvvisata: false, semplice: false, daGuerra: false }, compScudi: false,
   talenti: [],
+  // ogni talento può avere: id, catalogoId (se preso dal catalogo Talenti), nome, desc, applicaA, valore
   slotIncantesimo: Array.from({ length: 9 }, (_, i) => ({ livello: i + 1, totali: 0, usati: 0 })),
   puntiStregoneria: { totali: 0, usati: 0 },
 });
