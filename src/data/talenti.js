@@ -42,6 +42,7 @@ const DEFAULT_TALENTI_CATALOGO = [
   { id: "coriaceo", nome: "Coriaceo", prerequisito: "", desc: "Guadagni 2 PF extra per ogni livello di personaggio che hai o che otterrai in futuro." },
   { id: "mago_di_guerra", nome: "Mago di Guerra", prerequisito: "Capacità di lanciare incantesimi", desc: "+1 alla caratteristica da incantatore. Vantaggio ai TS di Concentrazione, e puoi effettuare le componenti somatiche di un incantesimo anche impugnando armi e scudi." },
   { id: "maestro_armi", nome: "Maestro d'Armi", prerequisito: "", desc: "+1 a Forza o Destrezza. Ottieni competenza con due armi da guerra a tua scelta, e ne scegli due con cui applicare un modello di attacco tattico più efficace." },
+  { id: "iniziato_magia", nome: "Iniziato alla Magia", prerequisito: "", desc: "Impari due trucchetti e un incantesimo di 1° livello dalla lista di una classe incantatrice a tua scelta; puoi lanciare l'incantesimo di 1° livello una volta al giorno senza spendere uno slot, o usando i tuoi slot incantesimo normali per lanciarlo più volte." },
 ].map((t) => ({ ...t, custom: false }));
 
 export { DEFAULT_TALENTI_CATALOGO };
