@@ -77,6 +77,8 @@ const styles = {
   searchResultRow: { width: "100%", display: "flex", justifyContent: "space-between", background: palette.panelAlt, border: "none", borderBottom: `1px solid ${palette.line}`, color: palette.parchment, padding: "8px 12px", fontSize: 13, cursor: "pointer", fontFamily: "inherit" },
   itemList: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 },
   itemRow: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, background: palette.panelAlt, border: `1px solid ${palette.line}`, borderRadius: 8, padding: "8px 12px" },
+  itemGroup: { background: palette.panelAlt, border: `1px solid ${palette.line}`, borderRadius: 8, padding: "8px 12px", display: "flex", flexDirection: "column", gap: 6 },
+  itemNoteInput: { width: "100%", background: "transparent", border: "none", borderTop: `1px dashed ${palette.line}`, color: palette.parchmentDim, fontSize: 12.5, fontStyle: "italic", padding: "6px 0 0", resize: "none" },
   itemCard: { display: "flex", flexDirection: "column", gap: 8, background: palette.panelAlt, border: `1px solid ${palette.line}`, borderRadius: 8, padding: "8px 12px" },
   itemSubRow: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10 },
   dadiTitle: { fontSize: 13, textTransform: "uppercase", letterSpacing: "0.07em", color: palette.parchment, fontWeight: 700 },
