@@ -14,6 +14,7 @@ const newCharacter = (nome = "") => ({
   caOverride: null, iniziativaBonus: 0, scudo: false, velocitaOverride: null,
   tiriCompetenti: [], abilitaCompetenti: [], abilitaEsperte: [],
   tiriSalvezzaOverride: {}, abilitaOverride: {},
+  competenzeGeneriche: [],
   trattiRazziali: [], privilegiClasse: [], infoExtra: [],
   incantesimiNoti: [],
   armiPossedute: [], armaturePossedute: [], armaturaIndossataInstId: null, accessoriPosseduti: [],
