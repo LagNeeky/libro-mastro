@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { styles, palette } from '../styles.js';
-import { ABILITIES, ABILITY_LABELS, mod, fmt, zeroBonus, uid, PROF_BONUS_BY_LEVEL, nomeFonte, APPLICA_A_OPTIONS, MAGICO_OPTIONS, RARITA_OPTIONS } from '../utils/helpers.js';
+import { ABILITIES, ABILITY_LABELS, mod, fmt, zeroBonus, uid, PROF_BONUS_BY_LEVEL, nomeFonte, APPLICA_A_OPTIONS, MAGICO_OPTIONS, RARITA_OPTIONS, POSIZIONE_OPTIONS } from '../utils/helpers.js';
 import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, TERZO_CASTER_SOTTOCLASSI } from '../utils/spellSlots.js';
 import { ComboInput, NumInput, AutoTextarea, StatBox, SearchAddRow } from './shared.jsx';
 
 
-function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
+function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
   const razza = razze.find((r) => r.id === pg.razzaId);
   const sottorazza = sottorazze.find((s) => s.id === pg.sottorazzaId);
   const razzaBonus = razza?.bonus || zeroBonus();
@@ -106,13 +106,13 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const wResults = useMemo(() => (wQuery.trim() ? armi.filter((w) => w.nome.toLowerCase().includes(wQuery.toLowerCase())).slice(0, 8) : []), [wQuery, armi]);
   const aResults = useMemo(() => (aQuery.trim() ? armature.filter((a) => a.nome.toLowerCase().includes(aQuery.toLowerCase())).slice(0, 8) : []), [aQuery, armature]);
   const accResults = useMemo(() => (accQuery.trim() ? accessori.filter((a) => a.nome.toLowerCase().includes(accQuery.toLowerCase())).slice(0, 8) : []), [accQuery, accessori]);
-  const aggiungiArma = (refId) => updatePg({ armiPossedute: [...pg.armiPossedute, { instId: uid(), refId, magico: "", rarita: "", modTpc: 0, modDanno: 0 }] });
+  const aggiungiArma = (refId) => { const w = armi.find((x) => x.id === refId); updatePg({ armiPossedute: [...pg.armiPossedute, { instId: uid(), refId, magico: "", rarita: "", modTpc: 0, modDanno: 0, note: w?.note && w.note !== "—" ? w.note : "" }] }); };
   const rimuoviArma = (instId) => updatePg({ armiPossedute: pg.armiPossedute.filter((x) => x.instId !== instId) });
   const aggiornaCampoArma = (instId, patch) => updatePg({ armiPossedute: pg.armiPossedute.map((x) => (x.instId === instId ? { ...x, ...patch } : x)) });
-  const aggiungiArmatura = (refId) => updatePg({ armaturePossedute: [...pg.armaturePossedute, { instId: uid(), refId, magico: "", rarita: "" }] });
+  const aggiungiArmatura = (refId) => updatePg({ armaturePossedute: [...pg.armaturePossedute, { instId: uid(), refId, magico: "", rarita: "", note: "" }] });
   const rimuoviArmatura = (instId) => updatePg({ armaturePossedute: pg.armaturePossedute.filter((x) => x.instId !== instId), armaturaIndossataInstId: pg.armaturaIndossataInstId === instId ? null : pg.armaturaIndossataInstId });
   const aggiornaCampoArmatura = (instId, patch) => updatePg({ armaturePossedute: pg.armaturePossedute.map((x) => (x.instId === instId ? { ...x, ...patch } : x)) });
-  const aggiungiAccessorio = (refId) => updatePg({ accessoriPosseduti: [...pg.accessoriPosseduti, { instId: uid(), refId, magico: "", rarita: "" }] });
+  const aggiungiAccessorio = (refId) => updatePg({ accessoriPosseduti: [...pg.accessoriPosseduti, { instId: uid(), refId, magico: "", rarita: "", note: "" }] });
   const rimuoviAccessorio = (instId) => updatePg({ accessoriPosseduti: pg.accessoriPosseduti.filter((x) => x.instId !== instId) });
   const aggiornaCampoAccessorio = (instId, patch) => updatePg({ accessoriPosseduti: pg.accessoriPosseduti.map((x) => (x.instId === instId ? { ...x, ...patch } : x)) });
 
@@ -189,6 +189,18 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const aggiungiAbilita = () => { if (!nuovaAbilita.nome.trim()) return; setSkills((s) => [...s, { name: nuovaAbilita.nome, ab: nuovaAbilita.ab, custom: true }]); setNuovaAbilita({ nome: "", ab: "FOR" }); };
   const rimuoviAbilita = (nome) => { setSkills((s) => s.filter((x) => x.name !== nome)); updatePg({ abilitaCompetenti: pg.abilitaCompetenti.filter((x) => x !== nome), abilitaEsperte: pg.abilitaEsperte.filter((x) => x !== nome) }); };
   const [draggedSkill, setDraggedSkill] = useState(null);
+  const [draggedInv, setDraggedInv] = useState(null);
+  const spostaVoceInventario = (targetId) => {
+    if (!draggedInv || draggedInv === targetId) { setDraggedInv(null); return; }
+    updatePg({ inventario: (() => {
+      const nuovo = pg.inventario.filter((x) => x.id !== draggedInv);
+      const idx = nuovo.findIndex((x) => x.id === targetId);
+      const spostata = pg.inventario.find((x) => x.id === draggedInv);
+      nuovo.splice(idx, 0, spostata);
+      return nuovo;
+    })() });
+    setDraggedInv(null);
+  };
   const spostaSkill = (targetName) => {
     if (!draggedSkill || draggedSkill === targetName) { setDraggedSkill(null); return; }
     setSkills((s) => {
@@ -566,20 +578,23 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.sectionLabel}>Equipaggiamento — Armi</div>
         <SearchAddRow query={wQuery} setQuery={setWQuery} results={wResults} onAdd={(id) => { aggiungiArma(id); setWQuery(""); }} placeholder="Cerca un'arma da aggiungere..." />
         <div style={styles.itemList}>
-          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; const senzaCompetenzaArma = w.classi && w.classi.length > 0 && !pg.classi.some((ce) => w.classi.includes(ce.classeId)); return (
-            <div key={instId} style={styles.itemRow}>
-              <button style={styles.itemName} onClick={() => openDetail({ type: "arma", data: w })}>{w.nome}{w.custom ? " ★" : ""}</button>
-              <span style={styles.hint}>{w.danno} {w.tipoDanno}{senzaCompetenzaArma ? " · ⚠ nessuna classe ha competenza con quest'arma (il bonus di competenza non dovrebbe applicarsi)" : ""}</span>
-              <ComboInput value={magico} onChangeText={(t) => aggiornaCampoArma(instId, { magico: t })} options={MAGICO_OPTIONS} datalistId={`dl-magico-${instId}`} placeholder="Magico?" style={styles.magicSelect} />
-              <ComboInput value={rarita} onChangeText={(t) => aggiornaCampoArma(instId, { rarita: t })} options={RARITA_OPTIONS} datalistId={`dl-rarita-${instId}`} placeholder="Rarità" style={styles.magicSelect} />
-              <label style={styles.modLabel}>Mod. TpC<NumInput min={-20} max={20} style={styles.modInput} value={modTpc || 0} onCommit={(n) => aggiornaCampoArma(instId, { modTpc: n })} /></label>
-              <label style={styles.modLabel}>Mod. Danno<NumInput min={-20} max={20} style={styles.modInput} value={modDanno || 0} onCommit={(n) => aggiornaCampoArma(instId, { modDanno: n })} /></label>
-              <div style={{ ...styles.itemActions, marginLeft: "auto" }}>
-                <button style={styles.smallBtn} onClick={() => attaccaConArma(w, modTpc)}>🎯 TpC</button>
-                <button style={{ ...styles.smallBtn, ...(critWeapons[instId] ? styles.smallBtnActive : {}) }} onClick={() => setCritWeapons((c) => ({ ...c, [instId]: !c[instId] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>
-                <button style={styles.smallBtn} onClick={() => tiraDannoArma(instId, w, modDanno)}>💥 Danno{critWeapons[instId] ? " (crit!)" : ""}</button>
-                <button style={styles.removeX} onClick={() => rimuoviArma(instId)}>✕</button>
+          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno, note }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; const senzaCompetenzaArma = w.classi && w.classi.length > 0 && !pg.classi.some((ce) => w.classi.includes(ce.classeId)); return (
+            <div key={instId} style={styles.itemGroup}>
+              <div style={styles.itemRow}>
+                <button style={styles.itemName} onClick={() => openDetail({ type: "arma", data: w })}>{w.nome}{w.custom ? " ★" : ""}</button>
+                <span style={styles.hint}>{w.danno} {w.tipoDanno}{senzaCompetenzaArma ? " · ⚠ nessuna classe ha competenza con quest'arma (il bonus di competenza non dovrebbe applicarsi)" : ""}</span>
+                <ComboInput value={magico} onChangeText={(t) => aggiornaCampoArma(instId, { magico: t })} options={MAGICO_OPTIONS} datalistId={`dl-magico-${instId}`} placeholder="Magico?" style={styles.magicSelect} />
+                <ComboInput value={rarita} onChangeText={(t) => aggiornaCampoArma(instId, { rarita: t })} options={RARITA_OPTIONS} datalistId={`dl-rarita-${instId}`} placeholder="Rarità" style={styles.magicSelect} />
+                <label style={styles.modLabel}>Mod. TpC<NumInput min={-20} max={20} style={styles.modInput} value={modTpc || 0} onCommit={(n) => aggiornaCampoArma(instId, { modTpc: n })} /></label>
+                <label style={styles.modLabel}>Mod. Danno<NumInput min={-20} max={20} style={styles.modInput} value={modDanno || 0} onCommit={(n) => aggiornaCampoArma(instId, { modDanno: n })} /></label>
+                <div style={{ ...styles.itemActions, marginLeft: "auto" }}>
+                  <button style={styles.smallBtn} onClick={() => attaccaConArma(w, modTpc)}>🎯 TpC</button>
+                  <button style={{ ...styles.smallBtn, ...(critWeapons[instId] ? styles.smallBtnActive : {}) }} onClick={() => setCritWeapons((c) => ({ ...c, [instId]: !c[instId] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>
+                  <button style={styles.smallBtn} onClick={() => tiraDannoArma(instId, w, modDanno)}>💥 Danno{critWeapons[instId] ? " (crit!)" : ""}</button>
+                  <button style={styles.removeX} onClick={() => rimuoviArma(instId)}>✕</button>
+                </div>
               </div>
+              <AutoTextarea style={styles.itemNoteInput} placeholder="Note (proprietà, incantamenti, dettagli personalizzati...)" value={note || ""} onChange={(e) => aggiornaCampoArma(instId, { note: e.target.value })} />
             </div>
           ); })}
         </div>
@@ -587,16 +602,19 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.sectionLabel}>Equipaggiamento — Armature</div>
         <SearchAddRow query={aQuery} setQuery={setAQuery} results={aResults} onAdd={(id) => { aggiungiArmatura(id); setAQuery(""); }} placeholder="Cerca un'armatura da aggiungere..." />
         <div style={styles.itemList}>
-          {pg.armaturePossedute.map(({ instId, refId, magico, rarita }) => { const a = armature.find((x) => x.id === refId); if (!a) return null; const indossata = pg.armaturaIndossataInstId === instId; return (
-            <div key={instId} style={styles.itemRow}>
-              <button style={styles.itemName} onClick={() => openDetail({ type: "armatura", data: a })}>{a.nome}{a.custom ? " ★" : ""}</button>
-              <span style={styles.hint}>CA {a.ca} · {a.tipo}</span>
-              <ComboInput value={magico} onChangeText={(t) => aggiornaCampoArmatura(instId, { magico: t })} options={MAGICO_OPTIONS} datalistId={`dl-magico-${instId}`} placeholder="Magico?" style={styles.magicSelect} />
-              <ComboInput value={rarita} onChangeText={(t) => aggiornaCampoArmatura(instId, { rarita: t })} options={RARITA_OPTIONS} datalistId={`dl-rarita-${instId}`} placeholder="Rarità" style={styles.magicSelect} />
-              <div style={styles.itemActions}>
-                <button style={{ ...styles.smallBtn, ...(indossata ? styles.smallBtnActive : {}) }} onClick={() => updatePg({ armaturaIndossataInstId: indossata ? null : instId })}>{indossata ? "✓ Indossata" : "Indossa"}</button>
-                <button style={styles.smallDangerBtn} onClick={() => rimuoviArmatura(instId)}>Rimuovi</button>
+          {pg.armaturePossedute.map(({ instId, refId, magico, rarita, note }) => { const a = armature.find((x) => x.id === refId); if (!a) return null; const indossata = pg.armaturaIndossataInstId === instId; return (
+            <div key={instId} style={styles.itemGroup}>
+              <div style={styles.itemRow}>
+                <button style={styles.itemName} onClick={() => openDetail({ type: "armatura", data: a })}>{a.nome}{a.custom ? " ★" : ""}</button>
+                <span style={styles.hint}>CA {a.ca} · {a.tipo}</span>
+                <ComboInput value={magico} onChangeText={(t) => aggiornaCampoArmatura(instId, { magico: t })} options={MAGICO_OPTIONS} datalistId={`dl-magico-${instId}`} placeholder="Magico?" style={styles.magicSelect} />
+                <ComboInput value={rarita} onChangeText={(t) => aggiornaCampoArmatura(instId, { rarita: t })} options={RARITA_OPTIONS} datalistId={`dl-rarita-${instId}`} placeholder="Rarità" style={styles.magicSelect} />
+                <div style={styles.itemActions}>
+                  <button style={{ ...styles.smallBtn, ...(indossata ? styles.smallBtnActive : {}) }} onClick={() => updatePg({ armaturaIndossataInstId: indossata ? null : instId })}>{indossata ? "✓ Indossata" : "Indossa"}</button>
+                  <button style={styles.smallDangerBtn} onClick={() => rimuoviArmatura(instId)}>Rimuovi</button>
+                </div>
               </div>
+              <AutoTextarea style={styles.itemNoteInput} placeholder="Note (incantamenti, dettagli personalizzati...)" value={note || ""} onChange={(e) => aggiornaCampoArmatura(instId, { note: e.target.value })} />
             </div>
           ); })}
         </div>
@@ -604,13 +622,16 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.sectionLabel}>Equipaggiamento — Accessori</div>
         <SearchAddRow query={accQuery} setQuery={setAccQuery} results={accResults} onAdd={(id) => { aggiungiAccessorio(id); setAccQuery(""); }} placeholder="Cerca un accessorio da aggiungere..." />
         <div style={styles.itemList}>
-          {pg.accessoriPosseduti.map(({ instId, refId, magico, rarita }) => { const a = accessori.find((x) => x.id === refId); if (!a) return null; return (
-            <div key={instId} style={styles.itemRow}>
-              <button style={styles.itemName} onClick={() => openDetail({ type: "accessorio", data: a })}>{a.nome}{a.custom ? " ★" : ""}</button>
-              <span style={styles.hint}>effetto descrittivo</span>
-              <ComboInput value={magico} onChangeText={(t) => aggiornaCampoAccessorio(instId, { magico: t })} options={MAGICO_OPTIONS} datalistId={`dl-magico-${instId}`} placeholder="Magico?" style={styles.magicSelect} />
-              <ComboInput value={rarita} onChangeText={(t) => aggiornaCampoAccessorio(instId, { rarita: t })} options={RARITA_OPTIONS} datalistId={`dl-rarita-${instId}`} placeholder="Rarità" style={styles.magicSelect} />
-              <div style={styles.itemActions}><button style={styles.smallDangerBtn} onClick={() => rimuoviAccessorio(instId)}>Rimuovi</button></div>
+          {pg.accessoriPosseduti.map(({ instId, refId, magico, rarita, note }) => { const a = accessori.find((x) => x.id === refId); if (!a) return null; return (
+            <div key={instId} style={styles.itemGroup}>
+              <div style={styles.itemRow}>
+                <button style={styles.itemName} onClick={() => openDetail({ type: "accessorio", data: a })}>{a.nome}{a.custom ? " ★" : ""}</button>
+                <span style={styles.hint}>effetto descrittivo</span>
+                <ComboInput value={magico} onChangeText={(t) => aggiornaCampoAccessorio(instId, { magico: t })} options={MAGICO_OPTIONS} datalistId={`dl-magico-${instId}`} placeholder="Magico?" style={styles.magicSelect} />
+                <ComboInput value={rarita} onChangeText={(t) => aggiornaCampoAccessorio(instId, { rarita: t })} options={RARITA_OPTIONS} datalistId={`dl-rarita-${instId}`} placeholder="Rarità" style={styles.magicSelect} />
+                <div style={styles.itemActions}><button style={styles.smallDangerBtn} onClick={() => rimuoviAccessorio(instId)}>Rimuovi</button></div>
+              </div>
+              <AutoTextarea style={styles.itemNoteInput} placeholder="Note personalizzate su questo oggetto..." value={note || ""} onChange={(e) => aggiornaCampoAccessorio(instId, { note: e.target.value })} />
             </div>
           ); })}
         </div>
@@ -619,10 +640,19 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.hint}>Oggetti generici: nome, quantità e dove si trovano (es. "Zaino", "Sella del cavallo"...).</div>
         <div style={styles.invTable}>
           {pg.inventario.map((v) => (
-            <div key={v.id} style={styles.invRow}>
+            <div
+              key={v.id}
+              style={{ ...styles.invRow, ...(draggedInv === v.id ? styles.tabBtnDragging : {}) }}
+              draggable
+              onDragStart={() => setDraggedInv(v.id)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => spostaVoceInventario(v.id)}
+              onDragEnd={() => setDraggedInv(null)}
+            >
+              <span style={styles.dragHandle} title="Trascina per riordinare">⠿</span>
               <AutoTextarea style={styles.invNome} placeholder="Oggetto" value={v.nome} onChange={(e) => aggiornaVoceInventario(v.id, { nome: e.target.value })} />
               <NumInput min={0} max={999} style={styles.invQty} value={v.quantita} onCommit={(n) => aggiornaVoceInventario(v.id, { quantita: n })} />
-              <AutoTextarea style={styles.invPos} placeholder="Posizione" value={v.posizione} onChange={(e) => aggiornaVoceInventario(v.id, { posizione: e.target.value })} />
+              <ComboInput value={v.posizione} onChangeText={(t) => aggiornaVoceInventario(v.id, { posizione: t })} options={POSIZIONE_OPTIONS} datalistId={`dl-posizione-${v.id}`} placeholder="Posizione" style={styles.invPos} />
               <button style={styles.pgDelBtn} onClick={() => rimuoviVoceInventario(v.id)}>✕</button>
             </div>
           ))}
@@ -834,6 +864,58 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           ))}
         </div>
         <button style={styles.newPgBtn} onClick={aggiungiInfoExtra}>+ Aggiungi campo Info Extra</button>
+
+        <div style={styles.sectionDivider} />
+
+        <div style={styles.sectionLabel}>Competenze Generiche</div>
+        <div style={styles.hint}>Strumenti, kit e veicoli con cui hai competenza. Spunta quelle che hai, o aggiungine una personalizzata se manca dalla lista.</div>
+        {["Strumenti da Artigiano", "Kit Speciali", "Giochi e Musica", "Veicoli"].map((cat) => (
+          <div key={cat} style={{ marginBottom: 10 }}>
+            <div style={styles.columnTitleLeft}>{cat}</div>
+            <div style={styles.cardGrid}>
+              {competenzeGenericheCatalogo.filter((c) => c.categoria === cat).map((c) => {
+                const checked = pg.competenzeGeneriche.includes(c.id);
+                return (
+                  <label key={c.id} style={styles.checkField}>
+                    <input type="checkbox" checked={checked} onChange={() => updatePg({ competenzeGeneriche: checked ? pg.competenzeGeneriche.filter((x) => x !== c.id) : [...pg.competenzeGeneriche, c.id] })} />
+                    {c.nome}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        <div style={styles.hint}>Non trovi quella che cerchi?</div>
+        <input
+          style={styles.formInput}
+          placeholder="Aggiungi una nuova competenza personalizzata e premi Invio..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.target.value.trim()) {
+              const nome = e.target.value.trim();
+              const id = uid();
+              setCompetenzeGenericheCatalogo((s) => [...s, { id, nome, categoria: "Personalizzate", custom: true }]);
+              updatePg({ competenzeGeneriche: [...pg.competenzeGeneriche, id] });
+              e.target.value = "";
+            }
+          }}
+        />
+        {competenzeGenericheCatalogo.some((c) => c.categoria === "Personalizzate") && (
+          <div style={{ marginTop: 8 }}>
+            <div style={styles.columnTitleLeft}>Personalizzate</div>
+            <div style={styles.cardGrid}>
+              {competenzeGenericheCatalogo.filter((c) => c.categoria === "Personalizzate").map((c) => {
+                const checked = pg.competenzeGeneriche.includes(c.id);
+                return (
+                  <label key={c.id} style={styles.checkField}>
+                    <input type="checkbox" checked={checked} onChange={() => updatePg({ competenzeGeneriche: checked ? pg.competenzeGeneriche.filter((x) => x !== c.id) : [...pg.competenzeGeneriche, c.id] })} />
+                    {c.nome}
+                    <button style={styles.pgDelBtn} onClick={() => { setCompetenzeGenericheCatalogo((s) => s.filter((x) => x.id !== c.id)); updatePg({ competenzeGeneriche: pg.competenzeGeneriche.filter((x) => x !== c.id) }); }}>✕</button>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div style={styles.columnTitleLeft}>Equipaggiamento — Competenze <button style={styles.smallBtn} onClick={sincronizzaCompetenzeEquip}>🔄 Sincronizza da Classe</button></div>
         <div style={styles.hint}>Le checkbox si pre-compilano in base alla classe (o classi, in caso di multiclasse), ma restano sempre modificabili a mano.</div>
