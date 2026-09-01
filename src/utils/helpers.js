@@ -5,6 +5,7 @@ const ABILITY_LABELS = { FOR: "Forza", DES: "Destrezza", COS: "Costituzione", IN
 const PROGRESSIONE_LABELS = { nessuno: "Non incantatore", mezzo: "Mezzo incantatore", pieno: "Incantatore completo" };
 
 const MAGICO_OPTIONS = [{ id: "non_magico", nome: "Non Magico" }, { id: "magico", nome: "Magico" }];
+const POSIZIONE_OPTIONS = [{ id: "indosso", nome: "Indosso" }, { id: "zaino", nome: "Zaino" }, { id: "tasca_cintura", nome: "Tasca da Cintura" }];
 const RARITA_OPTIONS = [{ id: "comune", nome: "Comune" }, { id: "non_comune", nome: "Non Comune" }, { id: "raro", nome: "Raro" }, { id: "molto_raro", nome: "Molto Raro" }, { id: "leggendario", nome: "Leggendario" }, { id: "artefatto", nome: "Artefatto" }];
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `id_${Math.random().toString(36).slice(2)}_${Date.now()}`);
 const mod = (score) => Math.floor((Number(score || 10) - 10) / 2);
@@ -37,4 +38,4 @@ const APPLICA_A_OPTIONS = (skills) => [
 
 
 
-export { ABILITIES, ABILITY_LABELS, PROGRESSIONE_LABELS, MAGICO_OPTIONS, RARITA_OPTIONS, uid, mod, fmt, zeroBonus, nomeFonte, parseTratti, PROF_BONUS_BY_LEVEL, APPLICA_A_OPTIONS };
+export { ABILITIES, ABILITY_LABELS, PROGRESSIONE_LABELS, MAGICO_OPTIONS, RARITA_OPTIONS, POSIZIONE_OPTIONS, uid, mod, fmt, zeroBonus, nomeFonte, parseTratti, PROF_BONUS_BY_LEVEL, APPLICA_A_OPTIONS };
