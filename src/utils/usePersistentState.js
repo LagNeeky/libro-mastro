@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { loadState, saveState, mergeOfficialData } from "../db.js";
 
 // Stato semplice salvato/caricato da IndexedDB (per schede, appunti, mappe, documenti, ordine delle tab...).
-export function usePersistentState(key, defaultValue) {
+// Il parametro opzionale "migrate" trasforma il valore appena caricato prima di usarlo (es. per
+// aggiungere ai personaggi salvati i campi introdotti da aggiornamenti successivi dell'app).
+export function usePersistentState(key, defaultValue, migrate) {
   const [state, setState] = useState(defaultValue);
   const loadedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
@@ -11,7 +13,7 @@ export function usePersistentState(key, defaultValue) {
     let attivo = true;
     loadState(key, defaultValue).then((stored) => {
       if (!attivo) return;
-      setState(stored);
+      setState(migrate ? migrate(stored) : stored);
       loadedRef.current = true;
       setLoaded(true);
     });
