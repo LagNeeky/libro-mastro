@@ -29,7 +29,7 @@ import InfoModal from "./components/InfoModal.jsx";
 
 const TABS = [
   { id: "schede", label: "Schede PG" }, { id: "identita", label: "Carta d'Identità" }, { id: "regole", label: "Regole" },
-  { id: "razze", label: "Razze" }, { id: "classi", label: "Classi" }, { id: "trasfondi", label: "Trasfondi" }, { id: "talenti_catalogo", label: "Talenti" },
+  { id: "razze", label: "Razze" }, { id: "classi", label: "Classi" }, { id: "trasfondi", label: "Background" }, { id: "talenti_catalogo", label: "Talenti" },
   { id: "incantesimi", label: "Incantesimi" }, { id: "equip", label: "Armi, Armature & Accessori" },
   { id: "appunti", label: "Appunti" }, { id: "conoscenza", label: "Conoscenza" }, { id: "mappe", label: "Mappe" },
 ];
