@@ -1,6 +1,6 @@
 // Armi, armature e accessori ufficiali (5e 2014)
 
-const SEMPLICI_BASE = ["barbaro", "bardo", "chierico", "druido", "guerriero", "ladro", "monaco", "paladino", "ranger", "warlock"];
+const SEMPLICI_BASE = ["artificiere", "barbaro", "bardo", "chierico", "druido", "guerriero", "ladro", "monaco", "paladino", "ranger", "warlock"];
 const TUTTE_CLASSI_ARMA = ["barbaro", "bardo", "chierico", "druido", "guerriero", "ladro", "mago", "monaco", "paladino", "ranger", "stregone", "warlock"];
 const MARZIALI_BASE = ["barbaro", "guerriero", "paladino", "ranger"];
 
@@ -25,8 +25,8 @@ const DEFAULT_WEAPONS = [
   { id: "arco_corto", nome: "Arco corto", categoria: "distanza", danno: "1d6", tipoDanno: "perforanti", finesse: false, note: "Munizioni (24/96m), Due mani", classi: SEMPLICI_BASE },
   { id: "arco_lungo", nome: "Arco lungo", categoria: "distanza", danno: "1d8", tipoDanno: "perforanti", finesse: false, note: "Munizioni (45/180m), Pesante, Due mani", classi: MARZIALI_BASE },
   { id: "balestra_leggera", nome: "Balestra leggera", categoria: "distanza", danno: "1d8", tipoDanno: "perforanti", finesse: false, note: "Munizioni (24/96m), Caricamento, Due mani", classi: TUTTE_CLASSI_ARMA },
-  { id: "balestra_pesante", nome: "Balestra pesante", categoria: "distanza", danno: "1d10", tipoDanno: "perforanti", finesse: false, note: "Munizioni (30/120m), Pesante, Caricamento, Due mani", classi: MARZIALI_BASE },
-  { id: "balestra_mano", nome: "Balestra a mano", categoria: "distanza", danno: "1d6", tipoDanno: "perforanti", finesse: false, note: "Munizioni (9/36m), Leggera, Caricamento", classi: [...MARZIALI_BASE, "bardo", "ladro"] },
+  { id: "balestra_pesante", nome: "Balestra pesante", categoria: "distanza", danno: "1d10", tipoDanno: "perforanti", finesse: false, note: "Munizioni (30/120m), Pesante, Caricamento, Due mani", classi: [...MARZIALI_BASE, "artificiere"] },
+  { id: "balestra_mano", nome: "Balestra a mano", categoria: "distanza", danno: "1d6", tipoDanno: "perforanti", finesse: false, note: "Munizioni (9/36m), Leggera, Caricamento", classi: [...MARZIALI_BASE, "artificiere", "bardo", "ladro"] },
   { id: "clava_enorme", nome: "Clava Enorme", categoria: "mischia", danno: "1d8", tipoDanno: "contundenti", finesse: false, note: "Due mani", classi: SEMPLICI_BASE },
   { id: "dardo", nome: "Dardo", categoria: "distanza", danno: "1d4", tipoDanno: "perforanti", finesse: true, note: "Finesse, Lanciabile (6/18m)", classi: TUTTE_CLASSI_ARMA },
   { id: "martello_leggero", nome: "Martello leggero", categoria: "mischia", danno: "1d4", tipoDanno: "contundenti", finesse: false, note: "Leggera, Lanciabile (6/18m)", classi: SEMPLICI_BASE },
@@ -44,8 +44,8 @@ const DEFAULT_WEAPONS = [
   { id: "rete", nome: "Rete", categoria: "distanza", danno: "—", tipoDanno: "nessuno", finesse: false, note: "Speciale (immobilizza il bersaglio), Lanciabile (1,5/4,5m)", classi: MARZIALI_BASE },
 ].map((w) => ({ ...w, rarita: "Comune", custom: false }));
 
-const LEGGERE_BASE = ["barbaro", "bardo", "chierico", "druido", "guerriero", "ladro", "paladino", "ranger", "warlock"];
-const MEDIE_BASE = ["barbaro", "chierico", "druido", "guerriero", "paladino", "ranger"];
+const LEGGERE_BASE = ["artificiere", "barbaro", "bardo", "chierico", "druido", "guerriero", "ladro", "paladino", "ranger", "warlock"];
+const MEDIE_BASE = ["artificiere", "barbaro", "chierico", "druido", "guerriero", "paladino", "ranger"];
 const PESANTI_BASE = ["guerriero", "paladino"];
 
 const DEFAULT_ARMORS = [
