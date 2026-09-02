@@ -30,9 +30,9 @@ function TrasfondiTab({ backgrounds, setBackgrounds, openDetail }) {
   return (
     <div style={styles.panel}>
       <h2 style={styles.panelTitle}>Background</h2>
-      <p style={styles.hint}>Il trasfondo di un personaggio definisce due competenze in abilità, eventuali strumenti, e un privilegio narrativo. Puoi collegarlo a un personaggio dalla Carta d'Identità.</p>
-      <input style={styles.searchInput} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca un trasfondo..." />
-      <button style={styles.primaryBtn} onClick={() => setShowForm(true)}>+ Nuovo trasfondo</button>
+      <p style={styles.hint}>Il Background di un personaggio definisce due competenze in abilità, eventuali strumenti, e un privilegio narrativo. Puoi collegarlo a un personaggio dalla Carta d'Identità.</p>
+      <input style={styles.searchInput} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca un Background..." />
+      <button style={styles.primaryBtn} onClick={() => setShowForm(true)}>+ Nuovo Background</button>
       <div style={{ ...styles.cardGrid, marginTop: 14 }}>
         {filtrati.map((b) => (
           <div key={b.id} style={styles.dataCard}>
@@ -44,8 +44,8 @@ function TrasfondiTab({ backgrounds, setBackgrounds, openDetail }) {
       </div>
 
       {showForm && (
-        <FormModal title="Nuovo trasfondo homebrew" onClose={() => setShowForm(false)} onSubmit={salva} canSubmit={!!form.nome.trim()}>
-          <input style={{ ...styles.formInput, display: "block", width: "100%", marginBottom: 8 }} placeholder="Nome trasfondo" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+        <FormModal title="Nuovo Background homebrew" onClose={() => setShowForm(false)} onSubmit={salva} canSubmit={!!form.nome.trim()}>
+          <input style={{ ...styles.formInput, display: "block", width: "100%", marginBottom: 8 }} placeholder="Nome Background" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
           <input style={{ ...styles.formInput, display: "block", width: "100%", marginBottom: 8 }} placeholder="Competenze in abilità (separate da virgola)" value={form.abilita} onChange={(e) => setForm({ ...form, abilita: e.target.value })} />
           <div style={styles.formRow}>
             <input style={styles.formInput} placeholder="Strumenti (separati da virgola)" value={form.strumenti} onChange={(e) => setForm({ ...form, strumenti: e.target.value })} />
