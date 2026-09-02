@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { styles, globalCss } from "./styles.js";
 import { rollD20, rollDiceNotation } from "./utils/dice.js";
 import { usePersistentState, useCatalogState } from "./utils/usePersistentState.js";
-import { newCharacter } from "./data/character.js";
+import { newCharacter, migratePersonaggi } from "./data/character.js";
 import { DEFAULT_SKILLS } from "./data/skills.js";
 import { DEFAULT_RAZZE, DEFAULT_SOTTORAZZE } from "./data/razze.js";
 import { DEFAULT_CLASSI, DEFAULT_SOTTOCLASSI } from "./data/classi.js";
@@ -53,7 +53,7 @@ export default function LibroMastro() {
   const [talentiCatalogo, setTalentiCatalogo, talentiCatalogoLoaded] = useCatalogState("talentiCatalogo", DEFAULT_TALENTI_CATALOGO);
   const [competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, competenzeGenericheLoaded] = useCatalogState("competenzeGenericheCatalogo", DEFAULT_COMPETENZE_GENERICHE);
 
-  const [personaggi, setPersonaggi, personaggiLoaded] = usePersistentState("personaggi", [newCharacter()]);
+  const [personaggi, setPersonaggi, personaggiLoaded] = usePersistentState("personaggi", [newCharacter()], migratePersonaggi);
   const [attivoId, setAttivoId] = useState(null);
   const [roll, setRoll] = useState(null);
   const [detail, setDetail] = useState(null);
