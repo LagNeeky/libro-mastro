@@ -62,7 +62,7 @@ const styles = {
   checkboxGroup: { display: "flex", gap: 16 },
   checkboxCol: { width: 26, display: "flex", justifyContent: "center" },
   dragHandle: { cursor: "grab", color: palette.parchmentDim, fontSize: 13, width: 14 },
-  checkRowLabel: { flex: 1 }, checkRowVal: { color: palette.gold, fontWeight: 700, width: 36, textAlign: "right" },
+  checkRowLabel: { flex: 1 }, checkRowVal: { color: palette.gold, fontWeight: 700, minWidth: 36, textAlign: "right", whiteSpace: "nowrap" },
   checkRowValInput: { color: palette.gold, fontWeight: 700, width: 40, textAlign: "center", background: "transparent", border: `1px solid transparent`, borderRadius: 4, padding: "2px 0" },
   checkRowValOverride: { border: `1px solid ${palette.gold}`, background: palette.panel },
   resetOverrideBtn: { background: "transparent", border: "none", color: palette.parchmentDim, cursor: "pointer", fontSize: 13, padding: "0 2px" },
