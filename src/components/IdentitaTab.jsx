@@ -84,7 +84,7 @@ function IdentitaTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg,
         </div>
 
         <div style={styles.sectionLabel}>Background</div>
-        <ComboInput value={pg.backgroundNome || ""} onChangeText={onTrasfondoChange} options={backgrounds} datalistId="dl-trasfondo" placeholder="Scegli o scrivi un trasfondo" style={{ ...styles.formInput, display: "block", width: "100%", marginBottom: 8 }} />
+        <ComboInput value={pg.backgroundNome || ""} onChangeText={onTrasfondoChange} options={backgrounds} datalistId="dl-trasfondo" placeholder="Scegli o scrivi un Background" style={{ ...styles.formInput, display: "block", width: "100%", marginBottom: 8 }} />
         {trasfondoAttuale && (
           <div style={styles.hint}>
             Competenze: {trasfondoAttuale.abilita.join(", ") || "—"}{trasfondoAttuale.strumenti.length ? ` · Strumenti: ${trasfondoAttuale.strumenti.join(", ")}` : ""}{trasfondoAttuale.lingue ? ` · Lingue: ${trasfondoAttuale.lingue}` : ""}<br />
