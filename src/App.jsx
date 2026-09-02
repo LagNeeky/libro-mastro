@@ -111,7 +111,7 @@ export default function LibroMastro() {
   };
 
   const openD20Roll = ({ title, modifier, modifierLabel }) => setRoll({ kind: "d20", title, modifier, modifierLabel, mode: "normale", dice: [], usedIndex: null });
-  const openDiceRoll = ({ title, notation, flatBonus, flatBonusLabel, doubled }) => setRoll({ kind: "dice", title, notation, flatBonus: flatBonus || 0, flatBonusLabel, doubled: !!doubled, result: null });
+  const openDiceRoll = ({ title, notation, flatBonus, flatBonusLabel, doubled, componenti }) => setRoll({ kind: "dice", title, notation, flatBonus: flatBonus || 0, flatBonusLabel, doubled: !!doubled, componenti: componenti || null, result: null });
   const changeRollMode = (mode) => setRoll((r) => ({ ...r, mode, dice: [], usedIndex: null }));
   const performRoll = () => setRoll((r) => {
     if (!r) return r;
@@ -122,6 +122,10 @@ export default function LibroMastro() {
       if (r.mode === "vantaggio") usedIndex = dice[0] >= dice[1] ? 0 : 1;
       if (r.mode === "svantaggio") usedIndex = dice[0] <= dice[1] ? 0 : 1;
       return { ...r, dice, usedIndex };
+    }
+    if (r.componenti && r.componenti.length) {
+      const risultatiComponenti = r.componenti.map((c) => ({ tipo: c.tipo, notazione: c.notazione, ...rollDiceNotation(c.notazione, r.doubled) }));
+      return { ...r, risultatiComponenti };
     }
     return { ...r, result: rollDiceNotation(r.notation, r.doubled) };
   });
