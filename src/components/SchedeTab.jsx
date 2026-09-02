@@ -653,15 +653,42 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             <div style={styles.sectionDivider} />
             <div style={styles.columnTitleLeft}>Lancio Incantesimi</div>
             {classiIncantatrici.length > 0 ? (
-              classiIncantatrici.map((c) => (
-                <div key={c.id} style={{ marginBottom: 10 }}>
-                  {classiIncantatrici.length > 1 && <div style={styles.traitSource}>{c.nome}</div>}
-                  <div style={styles.checkRow}><span style={styles.checkRowLabel}>Caratteristica</span><span style={styles.checkRowVal}>{ABILITY_LABELS[c.caster]}</span></div>
-                  <div style={styles.checkRow}><span style={styles.checkRowLabel}>Modificatore</span><span style={styles.checkRowVal}>{fmt(modByAb[c.caster])}</span></div>
-                  <div style={styles.checkRow}><span style={styles.checkRowLabel}>CD Tiro Salvezza</span><span style={styles.checkRowVal}>{8 + profBonus + modByAb[c.caster]}</span></div>
-                  <div style={styles.checkRow}><span style={styles.checkRowLabel}>Bonus Attacco</span><span style={styles.checkRowVal}>{fmt(profBonus + modByAb[c.caster])}</span></div>
-                </div>
-              ))
+              classiIncantatrici.map((c) => {
+                const ov = pg.lancioIncantesimiOverride?.[c.id] || {};
+                const aggiornaOv = (patch) => updatePg({ lancioIncantesimiOverride: { ...pg.lancioIncantesimiOverride, [c.id]: { ...ov, ...patch } } });
+                const resetOv = (chiave) => { const next = { ...ov }; delete next[chiave]; updatePg({ lancioIncantesimiOverride: { ...pg.lancioIncantesimiOverride, [c.id]: next } }); };
+                const caratteristica = ov.caratteristica || c.caster;
+                const modificatore = ov.modificatore !== undefined ? ov.modificatore : modByAb[caratteristica];
+                const cd = ov.cd !== undefined ? ov.cd : 8 + profBonus + modByAb[caratteristica];
+                const bonusAttacco = ov.bonusAttacco !== undefined ? ov.bonusAttacco : profBonus + modByAb[caratteristica];
+                return (
+                  <div key={c.id} style={{ marginBottom: 10 }}>
+                    {classiIncantatrici.length > 1 && <div style={styles.traitSource}>{c.nome}</div>}
+                    <div style={styles.checkRow}>
+                      <span style={styles.checkRowLabel}>Caratteristica</span>
+                      <select style={styles.checkRowValInput} value={caratteristica} onChange={(e) => aggiornaOv({ caratteristica: e.target.value })}>
+                        {ABILITIES.map((a) => <option key={a} value={a}>{ABILITY_LABELS[a]}</option>)}
+                      </select>
+                      {ov.caratteristica !== undefined && <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => resetOv("caratteristica")}>⟳</button>}
+                    </div>
+                    <div style={styles.checkRow}>
+                      <span style={styles.checkRowLabel}>Modificatore</span>
+                      <NumInput min={-20} max={20} style={{ ...styles.checkRowValInput, ...(ov.modificatore !== undefined ? styles.checkRowValOverride : {}) }} value={modificatore} onCommit={(n) => aggiornaOv({ modificatore: n })} />
+                      {ov.modificatore !== undefined && <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => resetOv("modificatore")}>⟳</button>}
+                    </div>
+                    <div style={styles.checkRow}>
+                      <span style={styles.checkRowLabel}>CD Tiro Salvezza</span>
+                      <NumInput min={0} max={30} style={{ ...styles.checkRowValInput, ...(ov.cd !== undefined ? styles.checkRowValOverride : {}) }} value={cd} onCommit={(n) => aggiornaOv({ cd: n })} />
+                      {ov.cd !== undefined && <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => resetOv("cd")}>⟳</button>}
+                    </div>
+                    <div style={styles.checkRow}>
+                      <span style={styles.checkRowLabel}>Bonus Attacco</span>
+                      <NumInput min={-20} max={20} style={{ ...styles.checkRowValInput, ...(ov.bonusAttacco !== undefined ? styles.checkRowValOverride : {}) }} value={bonusAttacco} onCommit={(n) => aggiornaOv({ bonusAttacco: n })} />
+                      {ov.bonusAttacco !== undefined && <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => resetOv("bonusAttacco")}>⟳</button>}
+                    </div>
+                  </div>
+                );
+              })
             ) : (
               <div style={styles.hint}>Nessuna classe incantatrice selezionata: questi valori compariranno automaticamente non appena scegli, come Classe o Classe aggiuntiva, una classe con capacità di lancio incantesimi.</div>
             )}
@@ -946,7 +973,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               </div>
               <div style={styles.slotStregDivider}>
                 {incantesimiPreparatiConosciuti.totale > 0 && (
-                  <div style={{ ...styles.slotCol, marginRight: 16 }} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
+                  <div style={styles.slotCol} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
                     <div style={styles.slotColTitle}>Prep.</div>
                     <NumInput min={0} max={99} style={styles.slotTotaliInput} value={pg.incantesimiPreparatiOverride ?? incantesimiPreparatiConosciuti.totale} onCommit={(n) => updatePg({ incantesimiPreparatiOverride: n })} />
                     {pg.incantesimiPreparatiOverride !== null && pg.incantesimiPreparatiOverride !== undefined ? (
