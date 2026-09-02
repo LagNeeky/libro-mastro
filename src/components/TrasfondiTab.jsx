@@ -29,7 +29,7 @@ function TrasfondiTab({ backgrounds, setBackgrounds, openDetail }) {
 
   return (
     <div style={styles.panel}>
-      <h2 style={styles.panelTitle}>Trasfondi</h2>
+      <h2 style={styles.panelTitle}>Background</h2>
       <p style={styles.hint}>Il trasfondo di un personaggio definisce due competenze in abilità, eventuali strumenti, e un privilegio narrativo. Puoi collegarlo a un personaggio dalla Carta d'Identità.</p>
       <input style={styles.searchInput} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca un trasfondo..." />
       <button style={styles.primaryBtn} onClick={() => setShowForm(true)}>+ Nuovo trasfondo</button>
