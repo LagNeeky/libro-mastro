@@ -923,13 +923,13 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               </div>
               <div style={styles.slotStregDivider}>
                 {incantesimiPreparatiConosciuti.totale > 0 && (
-                  <div style={{ ...styles.slotCol, ...styles.slotStregDivider, borderLeft: "none", paddingLeft: 0 }} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
+                  <div style={{ ...styles.slotCol, marginRight: 16 }} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
                     <div style={styles.slotColTitle}>Prep.</div>
                     <div style={styles.preparatiValore}>{incantesimiPreparatiConosciuti.totale}</div>
                     <div style={styles.slotEmptyHint}>auto</div>
                   </div>
                 )}
-                <div style={{ ...styles.slotCol, ...styles.slotStregDivider }}>
+                <div style={styles.slotCol}>
                   <div style={styles.slotColTitle}>Punti Streg.</div>
                   <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiStregoneria.totali} onCommit={(n) => aggiornaPuntiStregoneria({ totali: n, usati: Math.min(pg.puntiStregoneria.usati, n) })} />
                   <div style={styles.slotCheckRow}>
