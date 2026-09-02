@@ -23,6 +23,7 @@ const newCharacter = (nome = "") => ({
   infusioniTestoLibero: "",
   bonusOrigineCustom: {},
   genioTipo: "",
+  lancioIncantesimiOverride: {},
   armiPossedute: [], armaturePossedute: [], armaturaIndossataInstId: null, accessoriPosseduti: [],
   inventario: [],
   valute: [{ id: uid(), categoria: "Oro", speso: 0, ricavato: 0, inPossesso: 0 }, { id: uid(), categoria: "Argento", speso: 0, ricavato: 0, inPossesso: 0 }, { id: uid(), categoria: "Bronzo", speso: 0, ricavato: 0, inPossesso: 0 }],
