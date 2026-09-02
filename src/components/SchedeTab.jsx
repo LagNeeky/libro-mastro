@@ -5,7 +5,7 @@ import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, 
 import { ComboInput, NumInput, AutoTextarea, StatBox, SearchAddRow } from './shared.jsx';
 
 
-function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
+function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, infusioniCatalogo, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
   const razza = razze.find((r) => r.id === pg.razzaId);
   const sottorazza = sottorazze.find((s) => s.id === pg.sottorazzaId);
   const razzaBonus = razza?.bonus || zeroBonus();
@@ -352,6 +352,8 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const aggiornaPuntiKi = (patch) => updatePg({ puntiKi: { ...pg.puntiKi, ...patch } });
   const livelloMonaco = pg.classi.filter((ce) => ce.classeId === "monaco").reduce((s, ce) => s + (Number(ce.livello) || 0), 0);
   const livelloPaladino = pg.classi.filter((ce) => ce.classeId === "paladino").reduce((s, ce) => s + (Number(ce.livello) || 0), 0);
+  const livelloArtificiere = pg.classi.filter((ce) => ce.classeId === "artificiere").reduce((s, ce) => s + (Number(ce.livello) || 0), 0);
+  const [mostraFinestraInfusioni, setMostraFinestraInfusioni] = useState(false);
   const sincronizzaKi = () => {
     const totali = livelloMonaco >= 2 ? livelloMonaco : 0;
     updatePg({ puntiKi: { totali, usati: Math.min(pg.puntiKi.usati, totali) } });
@@ -934,7 +936,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                   </div>
                 )}
                 <div style={styles.slotCol}>
-                  <div style={styles.slotColTitle}>Punti Streg.</div>
+                  <div style={styles.slotColTitle}>P. Streg.</div>
                   <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiStregoneria.totali} onCommit={(n) => aggiornaPuntiStregoneria({ totali: n, usati: Math.min(pg.puntiStregoneria.usati, n) })} />
                   <div style={styles.slotCheckRow}>
                     {pg.puntiStregoneria.totali > 0 ? Array.from({ length: pg.puntiStregoneria.totali }, (_, i) => (
@@ -1087,6 +1089,13 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               <div style={styles.invSpacer} />
             </div>
           )}
+          {livelloArtificiere > 0 && (
+            <div style={styles.invRow}>
+              <button style={{ ...styles.invNome, cursor: "pointer", textDecoration: "underline" }} onClick={() => setMostraFinestraInfusioni(true)} title="Apri l'elenco completo delle Infusioni conosciute">Infusioni 📖</button>
+              <AutoTextarea style={styles.invPos} placeholder="Scrivi qui quali infusioni conosci e su quali oggetti le hai applicate..." value={pg.infusioniTestoLibero || ""} onChange={(e) => updatePg({ infusioniTestoLibero: e.target.value })} />
+              <div style={styles.invSpacer} />
+            </div>
+          )}
           {pg.infoExtra.map((v) => (
             <div key={v.id} style={styles.invRow}>
               <AutoTextarea style={styles.invNome} placeholder="Campo (es. Allineamento)" value={v.chiave} onChange={(e) => aggiornaInfoExtra(v.id, { chiave: e.target.value })} />
@@ -1167,6 +1176,35 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           </div>
         </div>
       </section>
+
+      {mostraFinestraInfusioni && (
+        <div style={styles.overlay} onClick={() => setMostraFinestraInfusioni(false)}>
+          <div style={{ ...styles.modalBox, maxWidth: 700, maxHeight: "80vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+            <button style={styles.modalClose} onClick={() => setMostraFinestraInfusioni(false)}>✕</button>
+            <h3 style={styles.modalTitle}>Infusioni dell'Artificiere</h3>
+            <p style={styles.hint}>Privilegio di classe comune a tutte le sottoclassi: al 2° livello ne conosci 4, e ne impari altre salendo di livello. Puoi sostituirne una a scelta ogni volta che sali di livello. Qui sotto l'elenco completo, con il livello minimo richiesto per ciascuna.</p>
+            {infusioniCatalogo.filter((i) => i.livelloMin <= Math.max(livelloArtificiere, 2)).map((i) => (
+              <div key={i.id} style={styles.itemGroup}>
+                <div style={styles.traitTitle}>{i.nome} <span style={styles.traitSource}>dal {i.livelloMin}° livello</span></div>
+                <div style={styles.hint}><strong>Oggetto:</strong> {i.oggetto}</div>
+                <div style={styles.modalDesc}>{i.desc}</div>
+              </div>
+            ))}
+            {infusioniCatalogo.some((i) => i.livelloMin > Math.max(livelloArtificiere, 2)) && (
+              <>
+                <div style={{ ...styles.columnTitleLeft, opacity: 0.6 }}>Non ancora disponibili al tuo livello</div>
+                {infusioniCatalogo.filter((i) => i.livelloMin > Math.max(livelloArtificiere, 2)).map((i) => (
+                  <div key={i.id} style={{ ...styles.itemGroup, opacity: 0.5 }}>
+                    <div style={styles.traitTitle}>{i.nome} <span style={styles.traitSource}>dal {i.livelloMin}° livello</span></div>
+                    <div style={styles.hint}><strong>Oggetto:</strong> {i.oggetto}</div>
+                    <div style={styles.modalDesc}>{i.desc}</div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
