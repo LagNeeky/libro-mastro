@@ -18,6 +18,7 @@ const newCharacter = (nome = "") => ({
   trattiRazziali: [], privilegiClasse: [], infoExtra: [],
   incantesimiNoti: [],
   incantesimiLivelloLancio: {},
+  incantesimiDannoExtra: {},
   armiPossedute: [], armaturePossedute: [], armaturaIndossataInstId: null, accessoriPosseduti: [],
   inventario: [],
   valute: [{ id: uid(), categoria: "Oro", speso: 0, ricavato: 0, inPossesso: 0 }, { id: uid(), categoria: "Argento", speso: 0, ricavato: 0, inPossesso: 0 }, { id: uid(), categoria: "Bronzo", speso: 0, ricavato: 0, inPossesso: 0 }],
@@ -54,6 +55,7 @@ function migrateCharacter(pg) {
   merged.tiriSalvezzaOverride = { ...(pg.tiriSalvezzaOverride || {}) };
   merged.abilitaOverride = { ...(pg.abilitaOverride || {}) };
   merged.incantesimiLivelloLancio = { ...(pg.incantesimiLivelloLancio || {}) };
+  merged.incantesimiDannoExtra = { ...(pg.incantesimiDannoExtra || {}) };
   merged.dadiVitaUsati = { ...(pg.dadiVitaUsati || {}) };
   merged.slotIncantesimo = Array.isArray(pg.slotIncantesimo) && pg.slotIncantesimo.length ? pg.slotIncantesimo : base.slotIncantesimo;
   return merged;
