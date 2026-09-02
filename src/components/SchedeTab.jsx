@@ -396,9 +396,50 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const [critWeapons, setCritWeapons] = useState({}); const [critSpells, setCritSpells] = useState({});
   const weaponAbilityMod = (w) => (w.categoria === "distanza" ? modByAb.DES : w.finesse ? Math.max(modByAb.FOR, modByAb.DES) : modByAb.FOR);
   const attaccaConArma = (w, modTpc) => { const abMod = weaponAbilityMod(w); const abLabel = w.categoria === "distanza" ? "DES (a distanza)" : w.finesse ? `${fmt(abMod)} (Finesse)` : "FOR (mischia)"; const extra = Number(modTpc) || 0; openD20Roll({ title: `TpC — ${w.nome}`, modifier: abMod + profBonus + extra, modifierLabel: `${abLabel} ${fmt(abMod)} + Competenza ${fmt(profBonus)}${extra ? ` + Modificatore arma ${fmt(extra)}` : ""}` }); };
-  const tiraDannoArma = (instId, w, modDanno, dannoOverride) => { const abMod = weaponAbilityMod(w); const extra = Number(modDanno) || 0; const notazione = dannoOverride && dannoOverride.trim() ? dannoOverride : w.danno; openDiceRoll({ title: `Danno — ${w.nome}`, notation: notazione, flatBonus: abMod + extra, flatBonusLabel: `modificatore caratteristica ${fmt(abMod)}${extra ? ` + Modificatore arma ${fmt(extra)}` : ""}`, doubled: !!critWeapons[instId] }); setCritWeapons((c) => ({ ...c, [instId]: false })); };
+  const tiraDannoArma = (instId, w, modDanno, dannoOverride, dannoExtra, tipoDannoExtra) => {
+    const abMod = weaponAbilityMod(w);
+    const extra = Number(modDanno) || 0;
+    const notazione = dannoOverride && dannoOverride.trim() ? dannoOverride : w.danno;
+    const tipoBase = w.tipoDanno;
+    const bonusBase = abMod + extra;
+    const notazioneBaseConBonus = bonusBase !== 0 ? `${notazione}${bonusBase > 0 ? "+" : ""}${bonusBase}` : notazione;
+    if (dannoExtra && dannoExtra.trim()) {
+      openDiceRoll({
+        title: `Danno — ${w.nome}`,
+        componenti: [
+          { tipo: tipoBase, notazione: notazioneBaseConBonus },
+          { tipo: tipoDannoExtra && tipoDannoExtra.trim() ? tipoDannoExtra : "extra", notazione: dannoExtra },
+        ],
+        doubled: !!critWeapons[instId],
+      });
+    } else {
+      openDiceRoll({ title: `Danno — ${w.nome}`, notation: notazione, flatBonus: abMod + extra, flatBonusLabel: `modificatore caratteristica ${fmt(abMod)}${extra ? ` + Modificatore arma ${fmt(extra)}` : ""}`, doubled: !!critWeapons[instId] });
+    }
+    setCritWeapons((c) => ({ ...c, [instId]: false }));
+  };
   const attaccaConIncantesimo = (s) => { if (!classePrimaria?.caster) return; const cMod = modByAb[classePrimaria.caster]; openD20Roll({ title: `TpC — ${s.nome}`, modifier: cMod + profBonus, modifierLabel: `${ABILITY_LABELS[classePrimaria.caster]} ${fmt(cMod)} + Competenza ${fmt(profBonus)}` }); };
-  const tiraDannoIncantesimo = (id, s) => { const cMod = classePrimaria?.caster ? modByAb[classePrimaria.caster] : 0; if (s.cura) { const notazione = notazioneEffettiva(s, s.cura); openDiceRoll({ title: `Cura — ${s.nome}`, notation: notazione, flatBonus: cMod, flatBonusLabel: `caratteristica da incantatore ${fmt(cMod)}${notazione !== s.cura ? " (potenziato)" : ""}` }); } else if (s.danno) { const notazione = notazioneEffettiva(s, s.danno); openDiceRoll({ title: `Danno — ${s.nome}`, notation: notazione, flatBonus: 0, flatBonusLabel: `gli incantesimi di norma non aggiungono il modificatore al danno${notazione !== s.danno ? " (potenziato)" : ""}`, doubled: !!critSpells[id] }); setCritSpells((c) => ({ ...c, [id]: false })); } };
+  const tiraDannoIncantesimo = (id, s, dannoExtra, tipoDannoExtra) => {
+    const cMod = classePrimaria?.caster ? modByAb[classePrimaria.caster] : 0;
+    if (s.cura) {
+      const notazione = notazioneEffettiva(s, s.cura);
+      openDiceRoll({ title: `Cura — ${s.nome}`, notation: notazione, flatBonus: cMod, flatBonusLabel: `caratteristica da incantatore ${fmt(cMod)}${notazione !== s.cura ? " (potenziato)" : ""}` });
+    } else if (s.danno) {
+      const notazione = notazioneEffettiva(s, s.danno);
+      if (dannoExtra && dannoExtra.trim()) {
+        openDiceRoll({
+          title: `Danno — ${s.nome}`,
+          componenti: [
+            { tipo: s.tipoDanno, notazione },
+            { tipo: tipoDannoExtra && tipoDannoExtra.trim() ? tipoDannoExtra : "extra", notazione: dannoExtra },
+          ],
+          doubled: !!critSpells[id],
+        });
+      } else {
+        openDiceRoll({ title: `Danno — ${s.nome}`, notation: notazione, flatBonus: 0, flatBonusLabel: `gli incantesimi di norma non aggiungono il modificatore al danno${notazione !== s.danno ? " (potenziato)" : ""}`, doubled: !!critSpells[id] });
+      }
+      setCritSpells((c) => ({ ...c, [id]: false }));
+    }
+  };
 
   // Estrae il primo termine "NdM" da una notazione di danno/cura (es. "3d4+3" -> {count:3, die:4}).
   const estraiDado = (notazione) => {
@@ -715,7 +756,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.sectionLabel}>Equipaggiamento — Armi</div>
         <SearchAddRow query={wQuery} setQuery={setWQuery} results={wResults} onAdd={(id) => { aggiungiArma(id); setWQuery(""); }} placeholder="Cerca un'arma da aggiungere..." />
         <div style={styles.itemList}>
-          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno, note, dannoOverride, tipoDannoOverride }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; const senzaCompetenzaArma = w.classi && w.classi.length > 0 && !pg.classi.some((ce) => w.classi.includes(ce.classeId)); return (
+          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno, note, dannoOverride, tipoDannoOverride, dannoExtra, tipoDannoExtra }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; const senzaCompetenzaArma = w.classi && w.classi.length > 0 && !pg.classi.some((ce) => w.classi.includes(ce.classeId)); return (
             <div key={instId} style={styles.itemGroup}>
               <div style={styles.itemRow}>
                 <button style={styles.itemName} onClick={() => openDetail({ type: "arma", data: w })}>{w.nome}{w.custom ? " ★" : ""}</button>
@@ -727,7 +768,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 <div style={{ ...styles.itemActions, marginLeft: "auto" }}>
                   <button style={styles.smallBtn} onClick={() => attaccaConArma(w, modTpc)}>🎯 TpC</button>
                   <button style={{ ...styles.smallBtn, ...(critWeapons[instId] ? styles.smallBtnActive : {}) }} onClick={() => setCritWeapons((c) => ({ ...c, [instId]: !c[instId] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>
-                  <button style={styles.smallBtn} onClick={() => tiraDannoArma(instId, w, modDanno, dannoOverride)}>💥 Danno{critWeapons[instId] ? " (crit!)" : ""}</button>
+                  <button style={styles.smallBtn} onClick={() => tiraDannoArma(instId, w, modDanno, dannoOverride, dannoExtra, tipoDannoExtra)}>💥 Danno{critWeapons[instId] ? " (crit!)" : ""}</button>
                   <button style={styles.removeX} onClick={() => rimuoviArma(instId)}>✕</button>
                 </div>
               </div>
@@ -736,7 +777,13 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 <input style={styles.overrideInput} placeholder={`Dadi danno (default ${w.danno})`} value={dannoOverride || ""} onChange={(e) => aggiornaCampoArma(instId, { dannoOverride: e.target.value })} />
                 <ComboInput value={tipoDannoOverride || ""} onChangeText={(t) => aggiornaCampoArma(instId, { tipoDannoOverride: t })} options={TIPO_DANNO_OPTIONS} datalistId={`dl-tipodanno-${instId}`} placeholder={`Tipo danno (default ${w.tipoDanno})`} style={styles.overrideInput} />
               </div>
-              <AutoTextarea style={styles.itemNoteInput} placeholder="Note (proprietà, incantamenti, dettagli personalizzati...)" value={note || ""} onChange={(e) => aggiornaCampoArma(instId, { note: e.target.value })} />
+              <div style={styles.overrideRow}>
+                <span style={styles.overrideLabel}>Danno aggiuntivo di tipo diverso (opzionale, es. arma fiammeggiante):</span>
+                <input style={styles.overrideInput} placeholder="Dadi extra (es. 2d6)" value={dannoExtra || ""} onChange={(e) => aggiornaCampoArma(instId, { dannoExtra: e.target.value })} />
+                <ComboInput value={tipoDannoExtra || ""} onChangeText={(t) => aggiornaCampoArma(instId, { tipoDannoExtra: t })} options={TIPO_DANNO_OPTIONS} datalistId={`dl-tipodannoextra-${instId}`} placeholder="Tipo del danno extra" style={styles.overrideInput} />
+              </div>
+              <div style={styles.overrideLabel}>Effetti, appunti e altri dettagli personalizzati:</div>
+              <AutoTextarea style={styles.itemNoteInput} placeholder="Es. su un colpo critico il bersaglio deve superare un TS o essere spaventato..." value={note || ""} onChange={(e) => aggiornaCampoArma(instId, { note: e.target.value })} />
             </div>
           ); })}
         </div>
@@ -762,7 +809,8 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 <input style={{ ...styles.overrideInput, minWidth: 90 }} placeholder={`Tetto DES (default ${a.maxDex === null ? "nessuno" : a.maxDex})`} value={maxDexOverride ?? ""} onChange={(e) => aggiornaCampoArmatura(instId, { maxDexOverride: e.target.value === "" ? null : e.target.value })} />
                 <input style={{ ...styles.overrideInput, minWidth: 110 }} placeholder={`Requisito Forza (default ${a.forzaMin ?? "nessuno"})`} value={forzaMinOverride ?? ""} onChange={(e) => aggiornaCampoArmatura(instId, { forzaMinOverride: e.target.value === "" ? null : e.target.value })} />
               </div>
-              <AutoTextarea style={styles.itemNoteInput} placeholder="Note (incantamenti, dettagli personalizzati...)" value={note || ""} onChange={(e) => aggiornaCampoArmatura(instId, { note: e.target.value })} />
+              <div style={styles.overrideLabel}>Effetti, appunti e altri dettagli personalizzati:</div>
+              <AutoTextarea style={styles.itemNoteInput} placeholder="Es. una volta al giorno dona vantaggio ai TS contro la paura..." value={note || ""} onChange={(e) => aggiornaCampoArmatura(instId, { note: e.target.value })} />
             </div>
           ); })}
         </div>
@@ -895,21 +943,30 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             <div style={styles.hint}>Il tasto aggiunge automaticamente gli incantesimi innati di razza (es. Tiefling, Aasimar, Elfo Scuro) e quelli "sempre pronti" concessi da Domini/Giuramenti/Patroni, senza contare nel numero di Prep./Conosciuti.</div>
             <SearchAddRow query={spellQuery} setQuery={setSpellQuery} results={spellResults} onAdd={(id) => { aggiungiIncantesimo(id); setSpellQuery(""); }} placeholder="Cerca un incantesimo per nome o scuola..." />
             <div style={styles.itemList}>
-              {pg.incantesimiNoti.map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; const puoUpcastare = s.livello > 0 && (s.danno || s.cura); const livelloLancio = pg.incantesimiLivelloLancio?.[id] || s.livello; return (
-                <div key={id} style={styles.itemRow}>
-                  <button style={styles.itemName} onClick={() => openDetail({ type: "incantesimo", data: s })}>{s.nome}{s.custom ? " ★" : ""}</button>
-                  <span style={styles.hint}>{s.livello === 0 ? "Trucchetto" : `Livello ${s.livello}`} · {s.scuola}</span>
-                  {puoUpcastare && (
-                    <label style={styles.modLabel}>Lancia a liv.
-                      <NumInput min={s.livello} max={9} style={styles.modInput} value={livelloLancio} onCommit={(n) => updatePg({ incantesimiLivelloLancio: { ...pg.incantesimiLivelloLancio, [id]: Math.max(s.livello, Math.min(9, n)) } })} />
-                    </label>
-                  )}
-                  <div style={styles.itemActions}>
-                    {s.attacco && <button style={styles.smallBtn} onClick={() => attaccaConIncantesimo(s)}>🎯 TpC</button>}
-                    {s.attacco && s.danno && <button style={{ ...styles.smallBtn, ...(critSpells[id] ? styles.smallBtnActive : {}) }} onClick={() => setCritSpells((c) => ({ ...c, [id]: !c[id] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>}
-                    {(s.danno || s.cura) && <button style={styles.smallBtn} onClick={() => tiraDannoIncantesimo(id, s)}>{s.cura ? "💚 Cura" : `💥 Danno${critSpells[id] ? " (crit!)" : ""}`}</button>}
-                    <button style={styles.smallDangerBtn} onClick={() => rimuoviIncantesimo(id)}>Rimuovi</button>
+              {pg.incantesimiNoti.map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; const puoUpcastare = s.livello > 0 && (s.danno || s.cura); const livelloLancio = pg.incantesimiLivelloLancio?.[id] || s.livello; const extraInfo = pg.incantesimiDannoExtra?.[id] || {}; return (
+                <div key={id} style={styles.itemGroup}>
+                  <div style={styles.itemRow}>
+                    <button style={styles.itemName} onClick={() => openDetail({ type: "incantesimo", data: s })}>{s.nome}{s.custom ? " ★" : ""}</button>
+                    <span style={styles.hint}>{s.livello === 0 ? "Trucchetto" : `Livello ${s.livello}`} · {s.scuola}</span>
+                    {puoUpcastare && (
+                      <label style={styles.modLabel}>Lancia a liv.
+                        <NumInput min={s.livello} max={9} style={styles.modInput} value={livelloLancio} onCommit={(n) => updatePg({ incantesimiLivelloLancio: { ...pg.incantesimiLivelloLancio, [id]: Math.max(s.livello, Math.min(9, n)) } })} />
+                      </label>
+                    )}
+                    <div style={styles.itemActions}>
+                      {s.attacco && <button style={styles.smallBtn} onClick={() => attaccaConIncantesimo(s)}>🎯 TpC</button>}
+                      {s.attacco && s.danno && <button style={{ ...styles.smallBtn, ...(critSpells[id] ? styles.smallBtnActive : {}) }} onClick={() => setCritSpells((c) => ({ ...c, [id]: !c[id] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>}
+                      {(s.danno || s.cura) && <button style={styles.smallBtn} onClick={() => tiraDannoIncantesimo(id, s, extraInfo.notazione, extraInfo.tipo)}>{s.cura ? "💚 Cura" : `💥 Danno${critSpells[id] ? " (crit!)" : ""}`}</button>}
+                      <button style={styles.smallDangerBtn} onClick={() => rimuoviIncantesimo(id)}>Rimuovi</button>
+                    </div>
                   </div>
+                  {s.danno && (
+                    <div style={styles.overrideRow}>
+                      <span style={styles.overrideLabel}>Danno aggiuntivo di tipo diverso (opzionale, es. da un oggetto magico):</span>
+                      <input style={styles.overrideInput} placeholder="Dadi extra (es. 1d6)" value={extraInfo.notazione || ""} onChange={(e) => updatePg({ incantesimiDannoExtra: { ...pg.incantesimiDannoExtra, [id]: { ...extraInfo, notazione: e.target.value } } })} />
+                      <ComboInput value={extraInfo.tipo || ""} onChangeText={(t) => updatePg({ incantesimiDannoExtra: { ...pg.incantesimiDannoExtra, [id]: { ...extraInfo, tipo: t } } })} options={TIPO_DANNO_OPTIONS} datalistId={`dl-tipodannoextra-inc-${id}`} placeholder="Tipo del danno extra" style={styles.overrideInput} />
+                    </div>
+                  )}
                 </div>
               ); })}
             </div>
@@ -1026,9 +1083,9 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         </div>
         <button style={styles.newPgBtn} onClick={aggiungiInfoExtra}>+ Aggiungi campo Info Extra</button>
 
-        <div style={styles.sectionDivider} />
+        <div style={{ ...styles.sectionDivider, marginBottom: 16 }} />
 
-        <div style={styles.sectionLabel}>Competenze Generiche</div>
+        <div style={{ ...styles.sectionLabel, borderTop: "none", paddingTop: 0, marginTop: 0 }}>Competenze Generiche</div>
         <div style={styles.hint}>Strumenti, kit e veicoli con cui hai competenza. Spunta quelle che hai, o aggiungine una personalizzata se manca dalla lista.</div>
         {["Strumenti da Artigiano", "Kit Speciali", "Giochi e Musica", "Veicoli"].map((cat) => (
           <div key={cat} style={{ marginBottom: 10 }}>
