@@ -102,7 +102,7 @@ const styles = {
   slotTwoColLayout: { display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 6 },
   slotGrid: { display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: 10, flex: 1 },
   slotGridRows: { display: "flex", flexDirection: "column", gap: 10, flex: 1 },
-  slotStregDivider: { borderLeft: `1px dashed ${palette.line}`, paddingLeft: 16 },
+  slotStregDivider: { borderLeft: `1px dashed ${palette.line}`, paddingLeft: 16, display: "flex", gap: 16, alignItems: "flex-start" },
   slotCol: { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, background: palette.panelAlt, border: `1px solid ${palette.line}`, borderRadius: 8, padding: "10px 8px", width: 78 },
   slotColTitle: { fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em", color: palette.gold, fontWeight: 700, textAlign: "center" },
   preparatiValore: { fontSize: 22, fontWeight: 700, color: palette.parchment, textAlign: "center", padding: "4px 0" },
