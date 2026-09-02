@@ -82,6 +82,8 @@ const styles = {
   overrideRow: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" },
   overrideLabel: { fontSize: 11, color: palette.parchmentDim, fontStyle: "italic" },
   overrideInput: { background: palette.panel, border: `1px solid ${palette.line}`, borderRadius: 5, color: palette.parchment, fontSize: 12, padding: "3px 6px", minWidth: 140 },
+  componenteDannoBlocco: { marginBottom: 10, paddingBottom: 8, borderBottom: `1px dashed ${palette.line}` },
+  componenteDannoTipo: { color: palette.gold, fontWeight: 700, fontSize: 13, marginBottom: 4, textTransform: "capitalize" },
   itemCard: { display: "flex", flexDirection: "column", gap: 8, background: palette.panelAlt, border: `1px solid ${palette.line}`, borderRadius: 8, padding: "8px 12px" },
   itemSubRow: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10 },
   dadiTitle: { fontSize: 13, textTransform: "uppercase", letterSpacing: "0.07em", color: palette.parchment, fontWeight: 700 },
