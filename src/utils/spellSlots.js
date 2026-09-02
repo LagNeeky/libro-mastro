@@ -23,4 +23,11 @@ const puntiStregoneriaPerLivello = (lvl) => (lvl >= 2 ? lvl : 0);
 // Sottoclassi che concedono lancio di incantesimi "a un terzo" (Cavaliere Magico, Trickster Arcano).
 const TERZO_CASTER_SOTTOCLASSI = ["cavaliere_magico", "trickster_arcano"];
 
-export { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, TERZO_CASTER_SOTTOCLASSI };
+// Incantesimi CONOSCIUTI (progressione fissa) per le classi che non "preparano" ma "conoscono" un numero fisso di incantesimi.
+const BARDO_CONOSCIUTI = [0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 15, 16, 18, 19, 19, 20, 22, 22, 22];
+const RANGER_CONOSCIUTI = [0, 0, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8, 8, 9, 10, 10, 11, 11, 11, 11];
+const STREGONE_CONOSCIUTI = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 13, 14, 14, 15, 15, 15, 15];
+const WARLOCK_CONOSCIUTI = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15];
+const TERZO_CASTER_CONOSCIUTI = [0, 0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 10, 11, 11, 12, 13];
+
+export { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, TERZO_CASTER_SOTTOCLASSI, BARDO_CONOSCIUTI, RANGER_CONOSCIUTI, STREGONE_CONOSCIUTI, WARLOCK_CONOSCIUTI, TERZO_CASTER_CONOSCIUTI };
