@@ -217,16 +217,34 @@ function RollModal({ roll, onClose, onChangeMode, onRoll }) {
     );
   }
   const r = roll.result;
+  const rc = roll.risultatiComponenti;
+  const totaleComponenti = rc ? rc.reduce((s, c) => s + c.total, 0) + roll.flatBonus : null;
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modalBox} onClick={(e) => e.stopPropagation()}>
         <button style={styles.modalClose} onClick={onClose}>✕</button>
         <h3 style={styles.modalTitle}>{roll.title}</h3>
         {roll.doubled && <div style={styles.critText}>Critico: dadi raddoppiati!</div>}
-        <div style={styles.hint}>{roll.notation}{roll.flatBonusLabel ? ` — ${roll.flatBonusLabel}` : ""}</div>
-        <div style={styles.diceRow}>{r ? r.rolls.map((v, i) => <div key={i} style={{ ...styles.die, background: palette.panel, color: palette.parchment, borderColor: palette.line }}>{v}</div>) : <div style={styles.hint}>Premi "Tira i dadi" per lanciare.</div>}</div>
-        {r && <div style={styles.resultBox}><div style={styles.totalText}>Totale: {r.total + roll.flatBonus} <span style={styles.hint}>({r.rolls.join(" + ")}{roll.flatBonus ? ` ${fmt(roll.flatBonus)}` : ""})</span></div></div>}
-        <button style={styles.primaryBtn} onClick={onRoll}>{r ? "Tira di nuovo" : "🎲 Tira i dadi"}</button>
+        {rc ? (
+          <>
+            <div style={styles.hint}>{roll.componenti.map((c) => `${c.notazione} ${c.tipo}`).join(" + ")}{roll.flatBonusLabel ? ` — ${roll.flatBonusLabel}` : ""}</div>
+            {rc.length ? rc.map((c, i) => (
+              <div key={i} style={styles.componenteDannoBlocco}>
+                <div style={styles.componenteDannoTipo}>{c.tipo}</div>
+                <div style={styles.diceRow}>{c.rolls.map((v, j) => <div key={j} style={{ ...styles.die, background: palette.panel, color: palette.parchment, borderColor: palette.line }}>{v}</div>)}</div>
+                <div style={styles.hint}>Subtotale {c.tipo}: {c.total} <span style={styles.hint}>({c.rolls.join(" + ")}{c.flat ? ` ${fmt(c.flat)}` : ""})</span></div>
+              </div>
+            )) : <div style={styles.hint}>Premi "Tira i dadi" per lanciare.</div>}
+            {rc.length > 0 && <div style={styles.resultBox}><div style={styles.totalText}>Totale complessivo: {totaleComponenti}</div></div>}
+          </>
+        ) : (
+          <>
+            <div style={styles.hint}>{roll.notation}{roll.flatBonusLabel ? ` — ${roll.flatBonusLabel}` : ""}</div>
+            <div style={styles.diceRow}>{r ? r.rolls.map((v, i) => <div key={i} style={{ ...styles.die, background: palette.panel, color: palette.parchment, borderColor: palette.line }}>{v}</div>) : <div style={styles.hint}>Premi "Tira i dadi" per lanciare.</div>}</div>
+            {r && <div style={styles.resultBox}><div style={styles.totalText}>Totale: {r.total + roll.flatBonus} <span style={styles.hint}>({r.rolls.join(" + ")}{roll.flatBonus ? ` ${fmt(roll.flatBonus)}` : ""})</span></div></div>}
+          </>
+        )}
+        <button style={styles.primaryBtn} onClick={onRoll}>{(r || (rc && rc.length)) ? "Tira di nuovo" : "🎲 Tira i dadi"}</button>
       </div>
     </div>
   );
