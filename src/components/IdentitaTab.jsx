@@ -83,7 +83,7 @@ function IdentitaTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg,
           </div>
         </div>
 
-        <div style={styles.sectionLabel}>Trasfondo</div>
+        <div style={styles.sectionLabel}>Background</div>
         <ComboInput value={pg.backgroundNome || ""} onChangeText={onTrasfondoChange} options={backgrounds} datalistId="dl-trasfondo" placeholder="Scegli o scrivi un trasfondo" style={{ ...styles.formInput, display: "block", width: "100%", marginBottom: 8 }} />
         {trasfondoAttuale && (
           <div style={styles.hint}>
