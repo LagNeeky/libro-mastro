@@ -923,13 +923,13 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               </div>
               <div style={styles.slotStregDivider}>
                 {incantesimiPreparatiConosciuti.totale > 0 && (
-                  <div style={styles.slotCol} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
-                    <div style={styles.slotColTitle}>Prep./Conosciuti</div>
+                  <div style={{ ...styles.slotCol, ...styles.slotStregDivider, borderLeft: "none", paddingLeft: 0 }} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
+                    <div style={styles.slotColTitle}>Prep.</div>
                     <div style={styles.preparatiValore}>{incantesimiPreparatiConosciuti.totale}</div>
                     <div style={styles.slotEmptyHint}>auto</div>
                   </div>
                 )}
-                <div style={styles.slotCol}>
+                <div style={{ ...styles.slotCol, ...styles.slotStregDivider }}>
                   <div style={styles.slotColTitle}>Punti Streg.</div>
                   <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiStregoneria.totali} onCommit={(n) => aggiornaPuntiStregoneria({ totali: n, usati: Math.min(pg.puntiStregoneria.usati, n) })} />
                   <div style={styles.slotCheckRow}>
@@ -940,7 +940,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 </div>
               </div>
             </div>
-            <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno). "Prep./Conosciuti" è calcolato in automatico dalle regole della tua classe (passa il mouse sopra per il dettaglio).</div>
+            <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno). "Prep." (Preparati/Conosciuti) è calcolato in automatico dalle regole della tua classe (passa il mouse sopra per il dettaglio).</div>
             {!classiIncantatrici.length && <button style={{ ...styles.smallBtn, marginTop: 10 }} onClick={() => updatePg({ mostraSlotIncantesimi: false })}>Nascondi (nessuna classe incantatrice)</button>}
           </>
         ) : (
