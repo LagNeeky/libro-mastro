@@ -35,5 +35,32 @@ const newCharacter = (nome = "") => ({
   mostraPuntiKi: false,
 });
 
+// Completa un personaggio salvato in precedenza con gli eventuali campi introdotti da
+// aggiornamenti successivi dell'app (es. Punti Ki, override personalizzati, ecc.), senza
+// mai toccare i valori gia' presenti. Da usare al caricamento per evitare che schede salvate
+// prima di un aggiornamento causino errori per campi mancanti.
+function migrateCharacter(pg) {
+  if (!pg || typeof pg !== "object") return pg;
+  const base = newCharacter();
+  const merged = { ...base, ...pg };
+  // unione (non sovrascrittura) degli oggetti annidati, cosi' un campo interno mancante non fa sparire l'intero blocco
+  merged.identita = { ...base.identita, ...(pg.identita || {}) };
+  merged.compArmature = { ...base.compArmature, ...(pg.compArmature || {}) };
+  merged.compArmi = { ...base.compArmi, ...(pg.compArmi || {}) };
+  merged.puntiStregoneria = { ...base.puntiStregoneria, ...(pg.puntiStregoneria || {}) };
+  merged.puntiKi = { ...base.puntiKi, ...(pg.puntiKi || {}) };
+  merged.imposizioneMani = { ...base.imposizioneMani, ...(pg.imposizioneMani || {}) };
+  merged.abilita = { ...base.abilita, ...(pg.abilita || {}) };
+  merged.tiriSalvezzaOverride = { ...(pg.tiriSalvezzaOverride || {}) };
+  merged.abilitaOverride = { ...(pg.abilitaOverride || {}) };
+  merged.incantesimiLivelloLancio = { ...(pg.incantesimiLivelloLancio || {}) };
+  merged.dadiVitaUsati = { ...(pg.dadiVitaUsati || {}) };
+  merged.slotIncantesimo = Array.isArray(pg.slotIncantesimo) && pg.slotIncantesimo.length ? pg.slotIncantesimo : base.slotIncantesimo;
+  return merged;
+}
+function migratePersonaggi(stored) {
+  if (!Array.isArray(stored) || !stored.length) return [newCharacter()];
+  return stored.map(migrateCharacter);
+}
 
-export { newCharacter };
+export { newCharacter, migrateCharacter, migratePersonaggi };
