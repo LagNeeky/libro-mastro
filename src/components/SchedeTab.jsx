@@ -925,8 +925,12 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 {incantesimiPreparatiConosciuti.totale > 0 && (
                   <div style={{ ...styles.slotCol, marginRight: 16 }} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
                     <div style={styles.slotColTitle}>Prep.</div>
-                    <div style={styles.preparatiValore}>{incantesimiPreparatiConosciuti.totale}</div>
-                    <div style={styles.slotEmptyHint}>auto</div>
+                    <NumInput min={0} max={99} style={styles.slotTotaliInput} value={pg.incantesimiPreparatiOverride ?? incantesimiPreparatiConosciuti.totale} onCommit={(n) => updatePg({ incantesimiPreparatiOverride: n })} />
+                    {pg.incantesimiPreparatiOverride !== null && pg.incantesimiPreparatiOverride !== undefined ? (
+                      <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => updatePg({ incantesimiPreparatiOverride: null })}>⟳ auto</button>
+                    ) : (
+                      <div style={styles.slotEmptyHint}>auto</div>
+                    )}
                   </div>
                 )}
                 <div style={styles.slotCol}>
