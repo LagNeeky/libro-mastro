@@ -11,6 +11,7 @@ import { DEFAULT_SPELLS } from "./data/incantesimi.js";
 import { DEFAULT_BACKGROUNDS } from "./data/backgrounds.js";
 import { DEFAULT_TALENTI_CATALOGO } from "./data/talenti.js";
 import { DEFAULT_COMPETENZE_GENERICHE } from "./data/competenze.js";
+import { DEFAULT_INFUSIONI } from "./data/infusioni.js";
 
 import { RollModal, DetailModal } from "./components/shared.jsx";
 import SchedeTab from "./components/SchedeTab.jsx";
@@ -52,6 +53,7 @@ export default function LibroMastro() {
   const [backgrounds, setBackgrounds, backgroundsLoaded] = useCatalogState("backgrounds", DEFAULT_BACKGROUNDS);
   const [talentiCatalogo, setTalentiCatalogo, talentiCatalogoLoaded] = useCatalogState("talentiCatalogo", DEFAULT_TALENTI_CATALOGO);
   const [competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, competenzeGenericheLoaded] = useCatalogState("competenzeGenericheCatalogo", DEFAULT_COMPETENZE_GENERICHE);
+  const [infusioniCatalogo, setInfusioniCatalogo, infusioniLoaded] = useCatalogState("infusioniCatalogo", DEFAULT_INFUSIONI);
 
   const [personaggi, setPersonaggi, personaggiLoaded] = usePersistentState("personaggi", [newCharacter()], migratePersonaggi);
   const [attivoId, setAttivoId] = useState(null);
@@ -63,7 +65,7 @@ export default function LibroMastro() {
 
   const tuttoCaricato = tabOrderLoaded && skillsLoaded && razzeLoaded && sottorazzeLoaded && classiLoaded &&
     sottoclassiLoaded && armiLoaded && armatureLoaded && accessoriLoaded && incantesimiLoaded &&
-    backgroundsLoaded && talentiCatalogoLoaded && competenzeGenericheLoaded &&
+    backgroundsLoaded && talentiCatalogoLoaded && competenzeGenericheLoaded && infusioniLoaded &&
     personaggiLoaded && appuntiLoaded && documentiLoaded && mappeLoaded;
 
   const orderedTabs = tabOrder.map((id) => TABS.find((t) => t.id === id)).filter(Boolean);
@@ -171,6 +173,7 @@ export default function LibroMastro() {
           skills={skills} setSkills={setSkills} razze={razze} sottorazze={sottorazze} classi={classi} sottoclassi={sottoclassi}
           armi={armi} armature={armature} accessori={accessori} incantesimi={incantesimi}
           competenzeGenericheCatalogo={competenzeGenericheCatalogo} setCompetenzeGenericheCatalogo={setCompetenzeGenericheCatalogo}
+          infusioniCatalogo={infusioniCatalogo}
           openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} openDetail={setDetail}
           onEsportaPg={esportaPg} onImportaPg={importaPg} />}
         {tab === "identita" && <IdentitaTab personaggi={personaggi} attivoId={pg.id} setAttivoId={setAttivoId} aggiungiPg={aggiungiPg} rimuoviPg={rimuoviPg} pg={pg} updatePg={updatePg} backgrounds={backgrounds} />}
