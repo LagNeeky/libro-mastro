@@ -73,7 +73,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
       const c = classi.find((x) => x.id === ce.classeId);
       if (!c) return;
       const lvl = Math.min(20, Number(ce.livello) || 0);
-      if (lvl <= 0) return;
+      if (!lvl || lvl <= 0) return;
       const isTerzoCaster = TERZO_CASTER_SOTTOCLASSI.includes(ce.sottoclasseId);
       let n = 0;
       if (c.id === "chierico" || c.id === "druido") { n = Math.max(1, modByAb.SAG + lvl); dettaglio.push(`${c.nome}: Saggezza (${fmt(modByAb.SAG)}) + livello (${lvl}) = ${n}`); }
@@ -419,6 +419,8 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
     if (livelliExtra === 0) return notazioneBase;
     return `${notazioneBase}+${livelliExtra}d${dado.die}`;
   };
+
+  const importInputRef = useRef(null);
   const handleImportFile = (e) => {
     const file = e.target.files?.[0];
     if (file && onImportaPg) onImportaPg(file);
