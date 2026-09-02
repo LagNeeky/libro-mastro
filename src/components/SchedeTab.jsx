@@ -79,6 +79,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
       if (c.id === "chierico" || c.id === "druido") { n = Math.max(1, modByAb.SAG + lvl); dettaglio.push(`${c.nome}: Saggezza (${fmt(modByAb.SAG)}) + livello (${lvl}) = ${n}`); }
       else if (c.id === "paladino") { n = Math.max(1, modByAb.CAR + Math.floor(lvl / 2)); dettaglio.push(`${c.nome}: Carisma (${fmt(modByAb.CAR)}) + metà livello (${Math.floor(lvl / 2)}) = ${n}`); }
       else if (c.id === "mago") { n = Math.max(1, modByAb.INT + lvl); dettaglio.push(`${c.nome}: Intelligenza (${fmt(modByAb.INT)}) + livello (${lvl}) = ${n} (nel libro degli incantesimi possono essercene molti di più)`); }
+      else if (c.id === "artificiere") { n = Math.max(1, modByAb.INT + Math.ceil(lvl / 2)); dettaglio.push(`${c.nome}: Intelligenza (${fmt(modByAb.INT)}) + metà livello arrotondato per eccesso (${Math.ceil(lvl / 2)}) = ${n}`); }
       else if (c.id === "bardo") { n = BARDO_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome}: ${n} conosciuti al livello ${lvl}`); }
       else if (c.id === "ranger") { n = RANGER_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome}: ${n} conosciuti al livello ${lvl}`); }
       else if (c.id === "stregone") { n = STREGONE_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome}: ${n} conosciuti al livello ${lvl}`); }
@@ -158,12 +159,18 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
     dominio_tempesta: [[1, "nube_nebbia"], [1, "onda_tonante"], [3, "raffica_vento"], [3, "infrangere"], [5, "controllare_acqua"], [7, "controllare_acqua"], [7, "tempesta_di_ghiaccio"], [9, "piaga_insetti"]],
     dominio_inganno: [[1, "charme_persone"], [1, "travestire_se_stesso"], [3, "immagine_speculare"], [3, "assenza_di_tracce"], [5, "sfarfallio"], [5, "dissolvi_magie"], [7, "porta_dimensionale"], [7, "tramutare"], [9, "dominare_persona"], [9, "modificare_memoria"]],
     dominio_guerra: [[1, "favore_divino"], [1, "scudo_della_fede"], [3, "arma_magica"], [3, "manto_crociato"], [5, "guardiani_spirituali"], [7, "liberta_movimento"], [7, "sfondamuro"], [9, "immobilizzare_mostro"]],
+    dominio_ordine: [[1, "comando"], [1, "eroismo"], [3, "immobilizzare_persone"], [3, "zona_di_verita"]],
+    dominio_pace: [[1, "santuario"], [1, "eroismo"], [3, "aiuto"], [3, "legame_di_guardia"], [5, "faro_speranza"], [5, "messaggero_arcano"]],
+    dominio_crepuscolo: [[1, "fuoco_fatuo"], [1, "sonno"]],
     giuramento_devozione: [[3, "sonno"], [5, "ristorazione_inferiore"], [9, "faro_speranza"], [9, "dissolvi_magie"], [13, "liberta_movimento"], [13, "guardiano_della_fede"], [17, "colpo_di_fiamma"]],
     giuramento_antichi: [[3, "colpo_intrappolante"], [3, "parlare_con_animali"], [5, "raggio_di_luna"], [5, "passo_velato"], [9, "crescita_vegetale"], [9, "protezione_da_energia"], [13, "tempesta_di_ghiaccio"], [17, "passo_arboreo"]],
     giuramento_vendetta: [[5, "immobilizzare_persone"], [5, "passo_velato"], [9, "prestezza"], [9, "protezione_da_energia"], [13, "bando"], [13, "porta_dimensionale"], [17, "immobilizzare_mostro"], [17, "scrutare"]],
     patrono_immondo: [[1, "mani_ardenti"], [1, "comando"], [3, "sfera_fiammeggiante"], [3, "raggio_infuocato"], [5, "palla_di_fuoco"], [7, "muro_di_fuoco"], [9, "colpo_di_fiamma"]],
     arcana_fata: [[1, "fuoco_fatuo"], [1, "sonno"], [3, "immagine_maggiore"], [5, "sfarfallio"], [5, "crescita_vegetale"], [7, "porta_dimensionale"], [9, "sogno"], [9, "piaga_insetti"]],
     grande_antico: [[1, "bisbigli_dissonanti"], [1, "risata_di_tasha"], [3, "individuazione_pensieri"], [3, "immagine_maggiore"], [5, "chiaroveggenza"], [5, "messaggero_arcano"], [7, "dominare_bestia"], [7, "tentacoli_neri"], [9, "sogno"], [9, "telecinesi"]],
+    giuramento_gloria: [[3, "dardo_guida"], [3, "eroismo"], [5, "potenziare_caratteristica"], [5, "arma_magica"], [9, "prestezza"], [9, "protezione_da_energia"], [13, "costrizione"], [13, "liberta_movimento"], [17, "comunione"], [17, "colpo_di_fiamma"]],
+    giuramento_guardiani: [[3, "allarme"], [3, "individuazione_magia"], [5, "raggio_di_luna"], [5, "vedere_invisibile"], [9, "contromagia"], [9, "non_individuazione"], [13, "bando"], [17, "immobilizzare_mostro"]],
+    patrono_abissale: [[1, "onda_tonante"], [3, "raffica_vento"], [3, "silenzio"], [5, "fulmine"]], // lista parziale: confermati solo alcuni incantesimi con sicurezza, mancano alcune coppie complete
   };
   const sincronizzaIncantesimiSottoclasse = () => {
     const attesi = new Set();
@@ -375,7 +382,10 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         // Personaggio non multiclasse: si usa la tabella diretta della propria classe,
         // che NON coincide con la formula di multiclasse (arrotonda per eccesso, non per difetto,
         // e non concede nulla prima del livello in cui la classe ottiene la magia).
+        // L'Artificiere è un'eccezione: è un incantatore a metà che arrotonda per eccesso
+        // fin dal 1° livello, senza dover aspettare il 2° come Paladino e Ranger.
         if (c.progressione === "pieno") livelloCombinato += lvl;
+        else if (c.progressione === "mezzo" && c.id === "artificiere") livelloCombinato += Math.ceil(lvl / 2);
         else if (c.progressione === "mezzo") livelloCombinato += lvl < 2 ? 0 : Math.ceil(lvl / 2);
         else if (isTerzoCaster) livelloCombinato += lvl < 3 ? 0 : Math.ceil(lvl / 3);
       }
