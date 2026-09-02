@@ -5,7 +5,7 @@ import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, 
 import { ComboInput, NumInput, AutoTextarea, StatBox, SearchAddRow } from './shared.jsx';
 
 
-function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, infusioniCatalogo, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
+function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, infusioniCatalogo, regoleOpzionali, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
   const razza = razze.find((r) => r.id === pg.razzaId);
   const sottorazza = sottorazze.find((s) => s.id === pg.sottorazzaId);
   const razzaBonus = razza?.bonus || zeroBonus();
@@ -166,11 +166,18 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
     giuramento_antichi: [[3, "colpo_intrappolante"], [3, "parlare_con_animali"], [5, "raggio_di_luna"], [5, "passo_velato"], [9, "crescita_vegetale"], [9, "protezione_da_energia"], [13, "tempesta_di_ghiaccio"], [17, "passo_arboreo"]],
     giuramento_vendetta: [[5, "immobilizzare_persone"], [5, "passo_velato"], [9, "prestezza"], [9, "protezione_da_energia"], [13, "bando"], [13, "porta_dimensionale"], [17, "immobilizzare_mostro"], [17, "scrutare"]],
     patrono_immondo: [[1, "mani_ardenti"], [1, "comando"], [3, "sfera_fiammeggiante"], [3, "raggio_infuocato"], [5, "palla_di_fuoco"], [7, "muro_di_fuoco"], [9, "colpo_di_fiamma"]],
+    patrono_genio: [[1, "individuazione_bene_male"], [5, "cibo_acqua"], [7, "uccisore_fantasmatico"], [9, "creazione"], [17, "desiderio"]], // lista comune a tutti i tipi di Genio
     arcana_fata: [[1, "fuoco_fatuo"], [1, "sonno"], [3, "immagine_maggiore"], [5, "sfarfallio"], [5, "crescita_vegetale"], [7, "porta_dimensionale"], [9, "sogno"], [9, "piaga_insetti"]],
     grande_antico: [[1, "bisbigli_dissonanti"], [1, "risata_di_tasha"], [3, "individuazione_pensieri"], [3, "immagine_maggiore"], [5, "chiaroveggenza"], [5, "messaggero_arcano"], [7, "dominare_bestia"], [7, "tentacoli_neri"], [9, "sogno"], [9, "telecinesi"]],
     giuramento_gloria: [[3, "dardo_guida"], [3, "eroismo"], [5, "potenziare_caratteristica"], [5, "arma_magica"], [9, "prestezza"], [9, "protezione_da_energia"], [13, "costrizione"], [13, "liberta_movimento"], [17, "comunione"], [17, "colpo_di_fiamma"]],
     giuramento_guardiani: [[3, "allarme"], [3, "individuazione_magia"], [5, "raggio_di_luna"], [5, "vedere_invisibile"], [9, "contromagia"], [9, "non_individuazione"], [13, "bando"], [17, "immobilizzare_mostro"]],
     patrono_abissale: [[1, "onda_tonante"], [3, "raffica_vento"], [3, "silenzio"], [5, "fulmine"]], // lista parziale: confermati solo alcuni incantesimi con sicurezza, mancano alcune coppie complete
+  };
+  const INCANTESIMI_GENIO_TIPO = {
+    Dao: [[1, "santuario"], [3, "crescita_spine"], [5, "fondersi_pietra"], [7, "modellare_pietra"], [9, "muro_di_pietra"]],
+    Djinni: [[1, "onda_tonante"], [3, "raffica_vento"], [5, "muro_di_vento"], [7, "invisibilita_superiore"], [9, "sembianze"]],
+    Efreeti: [[1, "mani_ardenti"], [3, "raggio_infuocato"], [5, "palla_di_fuoco"], [7, "scudo_del_fuoco"], [9, "colpo_di_fiamma"]],
+    Marid: [[1, "nube_nebbia"], [3, "confondere"], [5, "tempesta_scaglie_gelo"], [7, "controllare_acqua"], [9, "cono_di_freddo"]],
   };
   const sincronizzaIncantesimiSottoclasse = () => {
     const attesi = new Set();
@@ -179,6 +186,9 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
       if (!lista) return;
       const lvl = Number(ce.livello) || 0;
       lista.filter(([lMin]) => lvl >= lMin).forEach(([, id]) => attesi.add(id));
+      if (ce.sottoclasseId === "patrono_genio" && pg.genioTipo && INCANTESIMI_GENIO_TIPO[pg.genioTipo]) {
+        INCANTESIMI_GENIO_TIPO[pg.genioTipo].filter(([lMin]) => lvl >= lMin).forEach(([, id]) => attesi.add(id));
+      }
     });
     const nuovi = [...attesi].filter((id) => !pg.incantesimiNoti.includes(id));
     if (nuovi.length) updatePg({ incantesimiNoti: [...pg.incantesimiNoti, ...nuovi] });
@@ -593,14 +603,25 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.hint}>Scrivi un danno e premi Invio: viene tolto prima dai PF Temporanei, poi dagli Attuali, e sommato al totale Danni Subiti. Tutti i box restano modificabili a mano.</div>
 
         <div style={styles.sectionLabel}>Caratteristiche</div>
+        {regoleOpzionali && (
+          <div style={styles.hint}>⚙️ Regola opzionale "Personalizzazione dell'Origine" attiva: invece del bonus fisso della razza, puoi assegnare liberamente +2 e +1 a due caratteristiche diverse, oppure +1 a tre caratteristiche diverse. Il campo qui sotto sostituisce del tutto il bonus razza nel totale.</div>
+        )}
         <div style={styles.abilityGrid}>
           {ABILITIES.map((a) => {
-            const bonusRazza = (razzaBonus[a] || 0) + (sottorazzaBonus[a] || 0);
+            const bonusRazzaFisso = (razzaBonus[a] || 0) + (sottorazzaBonus[a] || 0);
+            const bonusCustom = pg.bonusOrigineCustom?.[a];
+            const bonusRazza = regoleOpzionali && bonusCustom !== undefined && bonusCustom !== null ? bonusCustom : bonusRazzaFisso;
             return (
               <div key={a} style={styles.abilityCard}>
                 <div style={styles.abilityName}>{ABILITY_LABELS[a]}</div>
                 <NumInput min={1} max={30} style={styles.abilityScoreInput} value={pg.abilita[a] + bonusRazza} onCommit={(n) => updatePg({ abilita: { ...pg.abilita, [a]: n - bonusRazza } })} />
-                {bonusRazza !== 0 && <div style={styles.hint}>Include {fmt(bonusRazza)} di bonus razza</div>}
+                {regoleOpzionali ? (
+                  <label style={styles.modLabel}>Bonus origine
+                    <NumInput min={0} max={2} style={styles.modInput} value={bonusCustom ?? bonusRazzaFisso} onCommit={(n) => updatePg({ bonusOrigineCustom: { ...pg.bonusOrigineCustom, [a]: n } })} />
+                  </label>
+                ) : (
+                  bonusRazza !== 0 && <div style={styles.hint}>Include {fmt(bonusRazza)} di bonus razza</div>
+                )}
                 <div style={styles.abilityModRow}>
                   <span style={styles.abilityMod}>{fmt(modByAb[a])}</span>
                   <button style={styles.diceBtn} onClick={() => openD20Roll({ title: `Prova di ${ABILITY_LABELS[a]}`, modifier: modByAb[a], modifierLabel: `${ABILITY_LABELS[a]} ${fmt(modByAb[a])}` })}>🎲</button>
@@ -1089,9 +1110,22 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
               <div style={styles.invSpacer} />
             </div>
           )}
+          {pg.classi.some((ce) => ce.sottoclasseId === "patrono_genio") && (
+            <div style={styles.invRow}>
+              <div style={styles.invNome}>Tipo di Genio</div>
+              <select style={styles.invPos} value={pg.genioTipo || ""} onChange={(e) => updatePg({ genioTipo: e.target.value })}>
+                <option value="">Scegli...</option>
+                <option value="Dao">Dao (Terra)</option>
+                <option value="Djinni">Djinni (Aria)</option>
+                <option value="Efreeti">Efreeti (Fuoco)</option>
+                <option value="Marid">Marid (Acqua)</option>
+              </select>
+              <div style={styles.invSpacer} />
+            </div>
+          )}
           {livelloArtificiere > 0 && (
             <div style={styles.invRow}>
-              <button style={{ ...styles.invNome, cursor: "pointer", textDecoration: "underline" }} onClick={() => setMostraFinestraInfusioni(true)} title="Apri l'elenco completo delle Infusioni conosciute">Infusioni 📖</button>
+              <button style={{ ...styles.invNome, cursor: "pointer", textDecoration: "underline", textAlign: "left", display: "block", width: "100%", boxSizing: "border-box", fontFamily: "inherit" }} onClick={() => setMostraFinestraInfusioni(true)} title="Apri l'elenco completo delle Infusioni conosciute">Infusioni 📖</button>
               <AutoTextarea style={styles.invPos} placeholder="Scrivi qui quali infusioni conosci e su quali oggetti le hai applicate..." value={pg.infusioniTestoLibero || ""} onChange={(e) => updatePg({ infusioniTestoLibero: e.target.value })} />
               <div style={styles.invSpacer} />
             </div>
