@@ -40,6 +40,7 @@ export default function LibroMastro() {
   const [tabOrder, setTabOrder, tabOrderLoaded] = usePersistentState("tabOrder", TABS.map((t) => t.id));
   const [draggedTabId, setDraggedTabId] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [regoleOpzionali, setRegoleOpzionali] = usePersistentState("regoleOpzionali", false);
 
   const [skills, setSkills, skillsLoaded] = useCatalogState("skills", DEFAULT_SKILLS);
   const [razze, setRazze, razzeLoaded] = useCatalogState("razze", DEFAULT_RAZZE);
@@ -148,7 +149,8 @@ export default function LibroMastro() {
         <div style={styles.headerInner}>
           <span style={styles.brandGlyph}>📖</span>
           <h1 style={styles.brandTitle}>Libro Mastro</h1>
-          <button style={{ ...styles.smallBtn, marginLeft: "auto" }} onClick={() => setShowInfo(true)}>ℹ️ Come funziona</button>
+          <button style={{ ...styles.smallBtn, marginLeft: "auto" }} onClick={() => setRegoleOpzionali((v) => !v)} title="Attiva o disattiva le regole opzionali (es. personalizzazione dell'origine razziale)">{regoleOpzionali ? "✅ Regole Opzionali: ON" : "⬜ Regole Opzionali: OFF"}</button>
+          <button style={styles.smallBtn} onClick={() => setShowInfo(true)}>ℹ️ Come funziona</button>
         </div>
         <nav style={styles.tabs}>
           {orderedTabs.map((t) => (
@@ -173,7 +175,7 @@ export default function LibroMastro() {
           skills={skills} setSkills={setSkills} razze={razze} sottorazze={sottorazze} classi={classi} sottoclassi={sottoclassi}
           armi={armi} armature={armature} accessori={accessori} incantesimi={incantesimi}
           competenzeGenericheCatalogo={competenzeGenericheCatalogo} setCompetenzeGenericheCatalogo={setCompetenzeGenericheCatalogo}
-          infusioniCatalogo={infusioniCatalogo}
+          infusioniCatalogo={infusioniCatalogo} regoleOpzionali={regoleOpzionali}
           openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} openDetail={setDetail}
           onEsportaPg={esportaPg} onImportaPg={importaPg} />}
         {tab === "identita" && <IdentitaTab personaggi={personaggi} attivoId={pg.id} setAttivoId={setAttivoId} aggiungiPg={aggiungiPg} rimuoviPg={rimuoviPg} pg={pg} updatePg={updatePg} backgrounds={backgrounds} />}
