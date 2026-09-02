@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { styles, palette } from '../styles.js';
-import { ABILITIES, ABILITY_LABELS, mod, fmt, zeroBonus, uid, PROF_BONUS_BY_LEVEL, nomeFonte, APPLICA_A_OPTIONS, MAGICO_OPTIONS, RARITA_OPTIONS, POSIZIONE_OPTIONS } from '../utils/helpers.js';
-import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, TERZO_CASTER_SOTTOCLASSI } from '../utils/spellSlots.js';
+import { ABILITIES, ABILITY_LABELS, mod, fmt, zeroBonus, uid, PROF_BONUS_BY_LEVEL, nomeFonte, APPLICA_A_OPTIONS, MAGICO_OPTIONS, RARITA_OPTIONS, POSIZIONE_OPTIONS, TIPO_DANNO_OPTIONS } from '../utils/helpers.js';
+import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, TERZO_CASTER_SOTTOCLASSI, BARDO_CONOSCIUTI, RANGER_CONOSCIUTI, STREGONE_CONOSCIUTI, WARLOCK_CONOSCIUTI, TERZO_CASTER_CONOSCIUTI } from '../utils/spellSlots.js';
 import { ComboInput, NumInput, AutoTextarea, StatBox, SearchAddRow } from './shared.jsx';
 
 
@@ -33,7 +33,14 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const bonusExtra = (tipo) => [...pg.trattiRazziali, ...pg.privilegiClasse, ...pg.talenti].filter((e) => e.applicaA === tipo).reduce((s, e) => s + Number(e.valore || 0), 0);
 
   const armaturaEquipRef = pg.armaturePossedute.find((x) => x.instId === pg.armaturaIndossataInstId);
-  const armaturaEquip = armaturaEquipRef ? armature.find((a) => a.id === armaturaEquipRef.refId) : null;
+  const armaturaEquipBase = armaturaEquipRef ? armature.find((a) => a.id === armaturaEquipRef.refId) : null;
+  const armaturaEquip = useMemo(() => {
+    if (!armaturaEquipBase) return null;
+    const ca = armaturaEquipRef.caOverride !== null && armaturaEquipRef.caOverride !== undefined && armaturaEquipRef.caOverride !== "" ? Number(armaturaEquipRef.caOverride) : armaturaEquipBase.ca;
+    const maxDex = armaturaEquipRef.maxDexOverride !== null && armaturaEquipRef.maxDexOverride !== undefined && armaturaEquipRef.maxDexOverride !== "" ? Number(armaturaEquipRef.maxDexOverride) : armaturaEquipBase.maxDex;
+    const forzaMin = armaturaEquipRef.forzaMinOverride !== null && armaturaEquipRef.forzaMinOverride !== undefined && armaturaEquipRef.forzaMinOverride !== "" ? Number(armaturaEquipRef.forzaMinOverride) : armaturaEquipBase.forzaMin;
+    return { ...armaturaEquipBase, ca, maxDex, forzaMin };
+  }, [armaturaEquipBase, armaturaEquipRef?.caOverride, armaturaEquipRef?.maxDexOverride, armaturaEquipRef?.forzaMinOverride]);
   const caCalcolata = useMemo(() => {
     if (pg.caOverride !== null && pg.caOverride !== undefined && pg.caOverride !== "") return Number(pg.caOverride);
     let base = 10 + modByAb.DES;
@@ -58,6 +65,29 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
     });
     return map;
   }, [pg.classi, classi]);
+
+  const incantesimiPreparatiConosciuti = useMemo(() => {
+    let totale = 0;
+    const dettaglio = [];
+    pg.classi.forEach((ce) => {
+      const c = classi.find((x) => x.id === ce.classeId);
+      if (!c) return;
+      const lvl = Math.min(20, Number(ce.livello) || 0);
+      if (lvl <= 0) return;
+      const isTerzoCaster = TERZO_CASTER_SOTTOCLASSI.includes(ce.sottoclasseId);
+      let n = 0;
+      if (c.id === "chierico" || c.id === "druido") { n = Math.max(1, modByAb.SAG + lvl); dettaglio.push(`${c.nome}: Saggezza (${fmt(modByAb.SAG)}) + livello (${lvl}) = ${n}`); }
+      else if (c.id === "paladino") { n = Math.max(1, modByAb.CAR + Math.floor(lvl / 2)); dettaglio.push(`${c.nome}: Carisma (${fmt(modByAb.CAR)}) + metà livello (${Math.floor(lvl / 2)}) = ${n}`); }
+      else if (c.id === "mago") { n = Math.max(1, modByAb.INT + lvl); dettaglio.push(`${c.nome}: Intelligenza (${fmt(modByAb.INT)}) + livello (${lvl}) = ${n} (nel libro degli incantesimi possono essercene molti di più)`); }
+      else if (c.id === "bardo") { n = BARDO_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome}: ${n} conosciuti al livello ${lvl}`); }
+      else if (c.id === "ranger") { n = RANGER_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome}: ${n} conosciuti al livello ${lvl}`); }
+      else if (c.id === "stregone") { n = STREGONE_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome}: ${n} conosciuti al livello ${lvl}`); }
+      else if (c.id === "warlock") { n = WARLOCK_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome}: ${n} conosciuti al livello ${lvl}`); }
+      else if (isTerzoCaster) { n = TERZO_CASTER_CONOSCIUTI[lvl]; dettaglio.push(`${c.nome} (incantatore a un terzo): ${n} conosciuti al livello ${lvl}`); }
+      totale += n;
+    });
+    return { totale, dettaglio };
+  }, [pg.classi, modByAb.SAG, modByAb.CAR, modByAb.INT, classi]);
 
   const iniziativa = modByAb.DES + Number(pg.iniziativaBonus || 0) + bonusExtra("Iniziativa");
 
@@ -101,6 +131,51 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const spellResults = useMemo(() => (spellQuery.trim() ? incantesimi.filter((s) => s.nome.toLowerCase().includes(spellQuery.toLowerCase()) || s.scuola.toLowerCase().includes(spellQuery.toLowerCase())).slice(0, 8) : []), [spellQuery, incantesimi]);
   const aggiungiIncantesimo = (id) => { if (!pg.incantesimiNoti.includes(id)) updatePg({ incantesimiNoti: [...pg.incantesimiNoti, id] }); };
   const rimuoviIncantesimo = (id) => updatePg({ incantesimiNoti: pg.incantesimiNoti.filter((x) => x !== id) });
+
+  // Incantesimi innati concessi da razza/sottorazza per regolamento, sbloccati progressivamente col livello del personaggio.
+  const INCANTESIMI_RAZZIALI = {
+    tiefling: [{ id: "taumaturgia", livello: 1 }, { id: "scherno_infernale", livello: 3 }, { id: "oscurita", livello: 5 }],
+    aasimar: [{ id: "luce", livello: 1 }, { id: "ristorazione_inferiore", livello: 3 }, { id: "luce_del_giorno", livello: 5 }],
+    elfo_scuro: [{ id: "luci_danzanti", livello: 1 }, { id: "fuoco_fatuo", livello: 3 }, { id: "oscurita", livello: 5 }],
+  };
+  const sincronizzaIncantesimiRazza = () => {
+    const attesi = [
+      ...(INCANTESIMI_RAZZIALI[pg.razzaId] || []),
+      ...(INCANTESIMI_RAZZIALI[pg.sottorazzaId] || []),
+    ].filter((r) => livelloTotale >= r.livello).map((r) => r.id);
+    if (!attesi.length) return;
+    const nuovi = attesi.filter((id) => !pg.incantesimiNoti.includes(id));
+    if (nuovi.length) updatePg({ incantesimiNoti: [...pg.incantesimiNoti, ...nuovi] });
+  };
+
+  // Incantesimi "sempre pronti" concessi da Domini del Chierico, Giuramenti del Paladino e Patroni del Warlock,
+  // sbloccati ai livelli di classe indicati (non contano nel numero di incantesimi preparati/conosciuti).
+  const INCANTESIMI_SOTTOCLASSE = {
+    dominio_vita: [[1, "benedizione"], [1, "cura_ferite"], [3, "ristorazione_inferiore"], [3, "arma_spirituale"], [5, "faro_speranza"], [5, "rianimare"], [7, "negazione_morte"], [7, "guardiano_della_fede"], [9, "cura_ferite_di_massa"], [9, "resurrezione"]],
+    dominio_luce: [[1, "mani_ardenti"], [1, "fuoco_fatuo"], [3, "sfera_fiammeggiante"], [3, "raggio_infuocato"], [5, "luce_del_giorno"], [5, "palla_di_fuoco"], [7, "guardiano_della_fede"], [7, "muro_di_fuoco"], [9, "colpo_di_fiamma"], [9, "scrutare"]],
+    dominio_conoscenza: [[1, "comando"], [1, "identificazione"], [3, "presagio"], [3, "suggestione"], [5, "non_individuazione"], [5, "parlare_coi_morti"], [7, "occhio_arcano"], [7, "confusione"], [9, "sapienza_leggendaria"], [9, "scrutare"]],
+    dominio_natura: [[1, "amicizia_animali"], [1, "parlare_con_animali"], [3, "pelle_di_corteccia"], [3, "intralciare"], [5, "crescita_vegetale"], [5, "muro_di_vento"], [7, "dominare_bestia"], [7, "liana_afferrante"], [9, "piaga_insetti"], [9, "passo_arboreo"]],
+    dominio_tempesta: [[1, "nube_nebbia"], [1, "onda_tonante"], [3, "raffica_vento"], [3, "infrangere"], [5, "controllare_acqua"], [7, "controllare_acqua"], [7, "tempesta_di_ghiaccio"], [9, "piaga_insetti"]],
+    dominio_inganno: [[1, "charme_persone"], [1, "travestire_se_stesso"], [3, "immagine_speculare"], [3, "assenza_di_tracce"], [5, "sfarfallio"], [5, "dissolvi_magie"], [7, "porta_dimensionale"], [7, "tramutare"], [9, "dominare_persona"], [9, "modificare_memoria"]],
+    dominio_guerra: [[1, "favore_divino"], [1, "scudo_della_fede"], [3, "arma_magica"], [3, "manto_crociato"], [5, "guardiani_spirituali"], [7, "liberta_movimento"], [7, "sfondamuro"], [9, "immobilizzare_mostro"]],
+    giuramento_devozione: [[3, "sonno"], [5, "ristorazione_inferiore"], [9, "faro_speranza"], [9, "dissolvi_magie"], [13, "liberta_movimento"], [13, "guardiano_della_fede"], [17, "colpo_di_fiamma"]],
+    giuramento_antichi: [[3, "colpo_intrappolante"], [3, "parlare_con_animali"], [5, "raggio_di_luna"], [5, "passo_velato"], [9, "crescita_vegetale"], [9, "protezione_da_energia"], [13, "tempesta_di_ghiaccio"], [17, "passo_arboreo"]],
+    giuramento_vendetta: [[5, "immobilizzare_persone"], [5, "passo_velato"], [9, "prestezza"], [9, "protezione_da_energia"], [13, "bando"], [13, "porta_dimensionale"], [17, "immobilizzare_mostro"], [17, "scrutare"]],
+    patrono_immondo: [[1, "mani_ardenti"], [1, "comando"], [3, "sfera_fiammeggiante"], [3, "raggio_infuocato"], [5, "palla_di_fuoco"], [7, "muro_di_fuoco"], [9, "colpo_di_fiamma"]],
+    arcana_fata: [[1, "fuoco_fatuo"], [1, "sonno"], [3, "immagine_maggiore"], [5, "sfarfallio"], [5, "crescita_vegetale"], [7, "porta_dimensionale"], [9, "sogno"], [9, "piaga_insetti"]],
+    grande_antico: [[1, "bisbigli_dissonanti"], [1, "risata_di_tasha"], [3, "individuazione_pensieri"], [3, "immagine_maggiore"], [5, "chiaroveggenza"], [5, "messaggero_arcano"], [7, "dominare_bestia"], [7, "tentacoli_neri"], [9, "sogno"], [9, "telecinesi"]],
+  };
+  const sincronizzaIncantesimiSottoclasse = () => {
+    const attesi = new Set();
+    pg.classi.forEach((ce) => {
+      const lista = INCANTESIMI_SOTTOCLASSE[ce.sottoclasseId];
+      if (!lista) return;
+      const lvl = Number(ce.livello) || 0;
+      lista.filter(([lMin]) => lvl >= lMin).forEach(([, id]) => attesi.add(id));
+    });
+    const nuovi = [...attesi].filter((id) => !pg.incantesimiNoti.includes(id));
+    if (nuovi.length) updatePg({ incantesimiNoti: [...pg.incantesimiNoti, ...nuovi] });
+  };
 
   const [wQuery, setWQuery] = useState(""); const [aQuery, setAQuery] = useState(""); const [accQuery, setAccQuery] = useState("");
   const wResults = useMemo(() => (wQuery.trim() ? armi.filter((w) => w.nome.toLowerCase().includes(wQuery.toLowerCase())).slice(0, 8) : []), [wQuery, armi]);
@@ -190,6 +265,30 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const rimuoviAbilita = (nome) => { setSkills((s) => s.filter((x) => x.name !== nome)); updatePg({ abilitaCompetenti: pg.abilitaCompetenti.filter((x) => x !== nome), abilitaEsperte: pg.abilitaEsperte.filter((x) => x !== nome) }); };
   const [draggedSkill, setDraggedSkill] = useState(null);
   const [draggedInv, setDraggedInv] = useState(null);
+  const [draggedPriv, setDraggedPriv] = useState(null);
+  const spostaPrivilegioClasse = (targetId) => {
+    if (!draggedPriv || draggedPriv === targetId) { setDraggedPriv(null); return; }
+    updatePg({ privilegiClasse: (() => {
+      const nuovo = pg.privilegiClasse.filter((x) => x.id !== draggedPriv);
+      const idx = nuovo.findIndex((x) => x.id === targetId);
+      const spostato = pg.privilegiClasse.find((x) => x.id === draggedPriv);
+      nuovo.splice(idx, 0, spostato);
+      return nuovo;
+    })() });
+    setDraggedPriv(null);
+  };
+  const [draggedTratto, setDraggedTratto] = useState(null);
+  const spostaTrattoRazziale = (targetId) => {
+    if (!draggedTratto || draggedTratto === targetId) { setDraggedTratto(null); return; }
+    updatePg({ trattiRazziali: (() => {
+      const nuovo = pg.trattiRazziali.filter((x) => x.id !== draggedTratto);
+      const idx = nuovo.findIndex((x) => x.id === targetId);
+      const spostato = pg.trattiRazziali.find((x) => x.id === draggedTratto);
+      nuovo.splice(idx, 0, spostato);
+      return nuovo;
+    })() });
+    setDraggedTratto(null);
+  };
   const spostaVoceInventario = (targetId) => {
     if (!draggedInv || draggedInv === targetId) { setDraggedInv(null); return; }
     updatePg({ inventario: (() => {
@@ -297,11 +396,29 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const [critWeapons, setCritWeapons] = useState({}); const [critSpells, setCritSpells] = useState({});
   const weaponAbilityMod = (w) => (w.categoria === "distanza" ? modByAb.DES : w.finesse ? Math.max(modByAb.FOR, modByAb.DES) : modByAb.FOR);
   const attaccaConArma = (w, modTpc) => { const abMod = weaponAbilityMod(w); const abLabel = w.categoria === "distanza" ? "DES (a distanza)" : w.finesse ? `${fmt(abMod)} (Finesse)` : "FOR (mischia)"; const extra = Number(modTpc) || 0; openD20Roll({ title: `TpC — ${w.nome}`, modifier: abMod + profBonus + extra, modifierLabel: `${abLabel} ${fmt(abMod)} + Competenza ${fmt(profBonus)}${extra ? ` + Modificatore arma ${fmt(extra)}` : ""}` }); };
-  const tiraDannoArma = (instId, w, modDanno) => { const abMod = weaponAbilityMod(w); const extra = Number(modDanno) || 0; openDiceRoll({ title: `Danno — ${w.nome}`, notation: w.danno, flatBonus: abMod + extra, flatBonusLabel: `modificatore caratteristica ${fmt(abMod)}${extra ? ` + Modificatore arma ${fmt(extra)}` : ""}`, doubled: !!critWeapons[instId] }); setCritWeapons((c) => ({ ...c, [instId]: false })); };
+  const tiraDannoArma = (instId, w, modDanno, dannoOverride) => { const abMod = weaponAbilityMod(w); const extra = Number(modDanno) || 0; const notazione = dannoOverride && dannoOverride.trim() ? dannoOverride : w.danno; openDiceRoll({ title: `Danno — ${w.nome}`, notation: notazione, flatBonus: abMod + extra, flatBonusLabel: `modificatore caratteristica ${fmt(abMod)}${extra ? ` + Modificatore arma ${fmt(extra)}` : ""}`, doubled: !!critWeapons[instId] }); setCritWeapons((c) => ({ ...c, [instId]: false })); };
   const attaccaConIncantesimo = (s) => { if (!classePrimaria?.caster) return; const cMod = modByAb[classePrimaria.caster]; openD20Roll({ title: `TpC — ${s.nome}`, modifier: cMod + profBonus, modifierLabel: `${ABILITY_LABELS[classePrimaria.caster]} ${fmt(cMod)} + Competenza ${fmt(profBonus)}` }); };
-  const tiraDannoIncantesimo = (id, s) => { const cMod = classePrimaria?.caster ? modByAb[classePrimaria.caster] : 0; if (s.cura) openDiceRoll({ title: `Cura — ${s.nome}`, notation: s.cura, flatBonus: cMod, flatBonusLabel: `caratteristica da incantatore ${fmt(cMod)}` }); else if (s.danno) { openDiceRoll({ title: `Danno — ${s.nome}`, notation: s.danno, flatBonus: 0, flatBonusLabel: "gli incantesimi di norma non aggiungono il modificatore al danno", doubled: !!critSpells[id] }); setCritSpells((c) => ({ ...c, [id]: false })); } };
+  const tiraDannoIncantesimo = (id, s) => { const cMod = classePrimaria?.caster ? modByAb[classePrimaria.caster] : 0; if (s.cura) { const notazione = notazioneEffettiva(s, s.cura); openDiceRoll({ title: `Cura — ${s.nome}`, notation: notazione, flatBonus: cMod, flatBonusLabel: `caratteristica da incantatore ${fmt(cMod)}${notazione !== s.cura ? " (potenziato)" : ""}` }); } else if (s.danno) { const notazione = notazioneEffettiva(s, s.danno); openDiceRoll({ title: `Danno — ${s.nome}`, notation: notazione, flatBonus: 0, flatBonusLabel: `gli incantesimi di norma non aggiungono il modificatore al danno${notazione !== s.danno ? " (potenziato)" : ""}`, doubled: !!critSpells[id] }); setCritSpells((c) => ({ ...c, [id]: false })); } };
 
-  const importInputRef = useRef(null);
+  // Estrae il primo termine "NdM" da una notazione di danno/cura (es. "3d4+3" -> {count:3, die:4}).
+  const estraiDado = (notazione) => {
+    const match = /(\d+)d(\d+)/.exec(notazione || "");
+    return match ? { count: Number(match[1]), die: Number(match[2]) } : null;
+  };
+  // Calcola la notazione effettiva di un incantesimo tenendo conto del livello di lancio scelto (upcast) o, per i trucchetti, del livello del personaggio.
+  const notazioneEffettiva = (s, notazioneBase) => {
+    const dado = estraiDado(notazioneBase);
+    if (!dado) return notazioneBase;
+    if (s.livello === 0) {
+      const moltiplicatore = livelloTotale >= 17 ? 4 : livelloTotale >= 11 ? 3 : livelloTotale >= 5 ? 2 : 1;
+      if (moltiplicatore <= 1) return notazioneBase;
+      return notazioneBase.replace(/(\d+)d(\d+)/, `${dado.count * moltiplicatore}d${dado.die}`);
+    }
+    const livelloLancio = pg.incantesimiLivelloLancio?.[s.id] || s.livello;
+    const livelliExtra = Math.max(0, livelloLancio - s.livello);
+    if (livelliExtra === 0) return notazioneBase;
+    return `${notazioneBase}+${livelliExtra}d${dado.die}`;
+  };
   const handleImportFile = (e) => {
     const file = e.target.files?.[0];
     if (file && onImportaPg) onImportaPg(file);
@@ -527,11 +644,20 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             <div style={styles.hint}>Privilegi automatici di classe e sottoclasse (di tutte le classi in caso di multiclasse), più eventuali voci manuali. Puoi collegare ognuno a un bonus numerico che influisce sui calcoli.</div>
             <div style={styles.itemList}>
               {pg.privilegiClasse.map((e) => (
-                <div key={e.id} style={styles.abilitaExtraRow}>
+                <div
+                  key={e.id}
+                  style={{ ...styles.abilitaExtraRow, ...(draggedPriv === e.id ? styles.tabBtnDragging : {}) }}
+                  draggable
+                  onDragStart={() => setDraggedPriv(e.id)}
+                  onDragOver={(ev) => ev.preventDefault()}
+                  onDrop={() => spostaPrivilegioClasse(e.id)}
+                  onDragEnd={() => setDraggedPriv(null)}
+                >
+                  <span style={styles.dragHandle} title="Trascina per riordinare">⠿</span>
                   <div style={{ flex: 1 }}>
-                    <div style={styles.traitTitle}>{e.nome}</div>
+                    <input style={styles.traitTitleInput} value={e.nome} onChange={(ev) => aggiornaPrivilegioClasse(e.id, { nome: ev.target.value })} />
                     <div style={styles.traitSource}>{nomeFonte(e.fonte)}</div>
-                    <div style={styles.hint}>{e.desc}</div>
+                    <AutoTextarea style={styles.traitDescInput} value={e.desc} onChange={(ev) => aggiornaPrivilegioClasse(e.id, { desc: ev.target.value })} />
                   </div>
                   <select style={styles.applicaASelect} value={e.applicaA} onChange={(ev) => aggiornaPrivilegioClasse(e.id, { applicaA: ev.target.value })}>
                     {APPLICA_A_OPTIONS(skills).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -553,11 +679,20 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             <div style={styles.hint}>Tratti automatici di razza e sottorazza, più eventuali voci manuali. Puoi collegare ognuno a un bonus numerico che influisce sui calcoli.</div>
             <div style={styles.itemList}>
               {pg.trattiRazziali.map((e) => (
-                <div key={e.id} style={styles.abilitaExtraRow}>
+                <div
+                  key={e.id}
+                  style={{ ...styles.abilitaExtraRow, ...(draggedTratto === e.id ? styles.tabBtnDragging : {}) }}
+                  draggable
+                  onDragStart={() => setDraggedTratto(e.id)}
+                  onDragOver={(ev) => ev.preventDefault()}
+                  onDrop={() => spostaTrattoRazziale(e.id)}
+                  onDragEnd={() => setDraggedTratto(null)}
+                >
+                  <span style={styles.dragHandle} title="Trascina per riordinare">⠿</span>
                   <div style={{ flex: 1 }}>
-                    <div style={styles.traitTitle}>{e.nome}</div>
+                    <input style={styles.traitTitleInput} value={e.nome} onChange={(ev) => aggiornaTrattoRazziale(e.id, { nome: ev.target.value })} />
                     <div style={styles.traitSource}>{nomeFonte(e.fonte)}</div>
-                    <div style={styles.hint}>{e.desc}</div>
+                    <AutoTextarea style={styles.traitDescInput} value={e.desc} onChange={(ev) => aggiornaTrattoRazziale(e.id, { desc: ev.target.value })} />
                   </div>
                   <select style={styles.applicaASelect} value={e.applicaA} onChange={(ev) => aggiornaTrattoRazziale(e.id, { applicaA: ev.target.value })}>
                     {APPLICA_A_OPTIONS(skills).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -578,7 +713,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.sectionLabel}>Equipaggiamento — Armi</div>
         <SearchAddRow query={wQuery} setQuery={setWQuery} results={wResults} onAdd={(id) => { aggiungiArma(id); setWQuery(""); }} placeholder="Cerca un'arma da aggiungere..." />
         <div style={styles.itemList}>
-          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno, note }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; const senzaCompetenzaArma = w.classi && w.classi.length > 0 && !pg.classi.some((ce) => w.classi.includes(ce.classeId)); return (
+          {pg.armiPossedute.map(({ instId, refId, magico, rarita, modTpc, modDanno, note, dannoOverride, tipoDannoOverride }) => { const w = armi.find((x) => x.id === refId); if (!w) return null; const senzaCompetenzaArma = w.classi && w.classi.length > 0 && !pg.classi.some((ce) => w.classi.includes(ce.classeId)); return (
             <div key={instId} style={styles.itemGroup}>
               <div style={styles.itemRow}>
                 <button style={styles.itemName} onClick={() => openDetail({ type: "arma", data: w })}>{w.nome}{w.custom ? " ★" : ""}</button>
@@ -590,9 +725,14 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 <div style={{ ...styles.itemActions, marginLeft: "auto" }}>
                   <button style={styles.smallBtn} onClick={() => attaccaConArma(w, modTpc)}>🎯 TpC</button>
                   <button style={{ ...styles.smallBtn, ...(critWeapons[instId] ? styles.smallBtnActive : {}) }} onClick={() => setCritWeapons((c) => ({ ...c, [instId]: !c[instId] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>
-                  <button style={styles.smallBtn} onClick={() => tiraDannoArma(instId, w, modDanno)}>💥 Danno{critWeapons[instId] ? " (crit!)" : ""}</button>
+                  <button style={styles.smallBtn} onClick={() => tiraDannoArma(instId, w, modDanno, dannoOverride)}>💥 Danno{critWeapons[instId] ? " (crit!)" : ""}</button>
                   <button style={styles.removeX} onClick={() => rimuoviArma(instId)}>✕</button>
                 </div>
+              </div>
+              <div style={styles.overrideRow}>
+                <span style={styles.overrideLabel}>Versione speciale (opzionale):</span>
+                <input style={styles.overrideInput} placeholder={`Dadi danno (default ${w.danno})`} value={dannoOverride || ""} onChange={(e) => aggiornaCampoArma(instId, { dannoOverride: e.target.value })} />
+                <ComboInput value={tipoDannoOverride || ""} onChangeText={(t) => aggiornaCampoArma(instId, { tipoDannoOverride: t })} options={TIPO_DANNO_OPTIONS} datalistId={`dl-tipodanno-${instId}`} placeholder={`Tipo danno (default ${w.tipoDanno})`} style={styles.overrideInput} />
               </div>
               <AutoTextarea style={styles.itemNoteInput} placeholder="Note (proprietà, incantamenti, dettagli personalizzati...)" value={note || ""} onChange={(e) => aggiornaCampoArma(instId, { note: e.target.value })} />
             </div>
@@ -602,7 +742,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
         <div style={styles.sectionLabel}>Equipaggiamento — Armature</div>
         <SearchAddRow query={aQuery} setQuery={setAQuery} results={aResults} onAdd={(id) => { aggiungiArmatura(id); setAQuery(""); }} placeholder="Cerca un'armatura da aggiungere..." />
         <div style={styles.itemList}>
-          {pg.armaturePossedute.map(({ instId, refId, magico, rarita, note }) => { const a = armature.find((x) => x.id === refId); if (!a) return null; const indossata = pg.armaturaIndossataInstId === instId; return (
+          {pg.armaturePossedute.map(({ instId, refId, magico, rarita, note, caOverride, maxDexOverride, forzaMinOverride }) => { const a = armature.find((x) => x.id === refId); if (!a) return null; const indossata = pg.armaturaIndossataInstId === instId; return (
             <div key={instId} style={styles.itemGroup}>
               <div style={styles.itemRow}>
                 <button style={styles.itemName} onClick={() => openDetail({ type: "armatura", data: a })}>{a.nome}{a.custom ? " ★" : ""}</button>
@@ -613,6 +753,12 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                   <button style={{ ...styles.smallBtn, ...(indossata ? styles.smallBtnActive : {}) }} onClick={() => updatePg({ armaturaIndossataInstId: indossata ? null : instId })}>{indossata ? "✓ Indossata" : "Indossa"}</button>
                   <button style={styles.smallDangerBtn} onClick={() => rimuoviArmatura(instId)}>Rimuovi</button>
                 </div>
+              </div>
+              <div style={styles.overrideRow}>
+                <span style={styles.overrideLabel}>Versione speciale (opzionale):</span>
+                <input style={{ ...styles.overrideInput, minWidth: 90 }} placeholder={`CA base (default ${a.ca})`} value={caOverride ?? ""} onChange={(e) => aggiornaCampoArmatura(instId, { caOverride: e.target.value === "" ? null : e.target.value })} />
+                <input style={{ ...styles.overrideInput, minWidth: 90 }} placeholder={`Tetto DES (default ${a.maxDex === null ? "nessuno" : a.maxDex})`} value={maxDexOverride ?? ""} onChange={(e) => aggiornaCampoArmatura(instId, { maxDexOverride: e.target.value === "" ? null : e.target.value })} />
+                <input style={{ ...styles.overrideInput, minWidth: 110 }} placeholder={`Requisito Forza (default ${a.forzaMin ?? "nessuno"})`} value={forzaMinOverride ?? ""} onChange={(e) => aggiornaCampoArmatura(instId, { forzaMinOverride: e.target.value === "" ? null : e.target.value })} />
               </div>
               <AutoTextarea style={styles.itemNoteInput} placeholder="Note (incantamenti, dettagli personalizzati...)" value={note || ""} onChange={(e) => aggiornaCampoArmatura(instId, { note: e.target.value })} />
             </div>
@@ -716,6 +862,13 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 </div>
               </div>
               <div style={styles.slotStregDivider}>
+                {incantesimiPreparatiConosciuti.totale > 0 && (
+                  <div style={styles.slotCol} title={incantesimiPreparatiConosciuti.dettaglio.join(" · ")}>
+                    <div style={styles.slotColTitle}>Prep./Conosciuti</div>
+                    <div style={styles.preparatiValore}>{incantesimiPreparatiConosciuti.totale}</div>
+                    <div style={styles.slotEmptyHint}>auto</div>
+                  </div>
+                )}
                 <div style={styles.slotCol}>
                   <div style={styles.slotColTitle}>Punti Streg.</div>
                   <NumInput min={0} max={20} style={styles.slotTotaliInput} value={pg.puntiStregoneria.totali} onCommit={(n) => aggiornaPuntiStregoneria({ totali: n, usati: Math.min(pg.puntiStregoneria.usati, n) })} />
@@ -727,22 +880,28 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                 </div>
               </div>
             </div>
-            <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno).</div>
+            <div style={styles.hint}>Scrivi il totale nel box tondo e premi Invio: compariranno i quadratini da cliccare per segnare quanti ne hai usati (clicca di nuovo per togliere il segno). "Prep./Conosciuti" è calcolato in automatico dalle regole della tua classe (passa il mouse sopra per il dettaglio).</div>
             {!classiIncantatrici.length && <button style={{ ...styles.smallBtn, marginTop: 10 }} onClick={() => updatePg({ mostraSlotIncantesimi: false })}>Nascondi (nessuna classe incantatrice)</button>}
           </>
         ) : (
           <div style={styles.hint}>Slot Incantesimo & Punti Stregoneria nascosti (nessuna classe incantatrice). <button style={styles.smallBtn} onClick={() => updatePg({ mostraSlotIncantesimi: true })}>Mostra comunque</button></div>
         )}
 
-        {(classiIncantatrici.length > 0 || pg.mostraIncantesimiNoti) ? (
+        {(classiIncantatrici.length > 0 || pg.mostraIncantesimiNoti || INCANTESIMI_RAZZIALI[pg.razzaId] || INCANTESIMI_RAZZIALI[pg.sottorazzaId] || pg.classi.some((ce) => INCANTESIMI_SOTTOCLASSE[ce.sottoclasseId])) ? (
           <>
-            <div style={styles.sectionLabel}>Incantesimi noti {classePrimaria?.caster && <span style={styles.hint}>({ABILITY_LABELS[classePrimaria.caster]}, mod. {fmt(modByAb[classePrimaria.caster])}, CD {8 + profBonus + modByAb[classePrimaria.caster]})</span>}</div>
+            <div style={styles.sectionLabel}>Incantesimi noti {classePrimaria?.caster && <span style={styles.hint}>({ABILITY_LABELS[classePrimaria.caster]}, mod. {fmt(modByAb[classePrimaria.caster])}, CD {8 + profBonus + modByAb[classePrimaria.caster]})</span>} <button style={styles.smallBtn} onClick={() => { sincronizzaIncantesimiRazza(); sincronizzaIncantesimiSottoclasse(); }}>🔄 Aggiungi da razza/sottoclasse</button></div>
+            <div style={styles.hint}>Il tasto aggiunge automaticamente gli incantesimi innati di razza (es. Tiefling, Aasimar, Elfo Scuro) e quelli "sempre pronti" concessi da Domini/Giuramenti/Patroni, senza contare nel numero di Prep./Conosciuti.</div>
             <SearchAddRow query={spellQuery} setQuery={setSpellQuery} results={spellResults} onAdd={(id) => { aggiungiIncantesimo(id); setSpellQuery(""); }} placeholder="Cerca un incantesimo per nome o scuola..." />
             <div style={styles.itemList}>
-              {pg.incantesimiNoti.map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; return (
+              {pg.incantesimiNoti.map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; const puoUpcastare = s.livello > 0 && (s.danno || s.cura); const livelloLancio = pg.incantesimiLivelloLancio?.[id] || s.livello; return (
                 <div key={id} style={styles.itemRow}>
                   <button style={styles.itemName} onClick={() => openDetail({ type: "incantesimo", data: s })}>{s.nome}{s.custom ? " ★" : ""}</button>
                   <span style={styles.hint}>{s.livello === 0 ? "Trucchetto" : `Livello ${s.livello}`} · {s.scuola}</span>
+                  {puoUpcastare && (
+                    <label style={styles.modLabel}>Lancia a liv.
+                      <NumInput min={s.livello} max={9} style={styles.modInput} value={livelloLancio} onCommit={(n) => updatePg({ incantesimiLivelloLancio: { ...pg.incantesimiLivelloLancio, [id]: Math.max(s.livello, Math.min(9, n)) } })} />
+                    </label>
+                  )}
                   <div style={styles.itemActions}>
                     {s.attacco && <button style={styles.smallBtn} onClick={() => attaccaConIncantesimo(s)}>🎯 TpC</button>}
                     {s.attacco && s.danno && <button style={{ ...styles.smallBtn, ...(critSpells[id] ? styles.smallBtnActive : {}) }} onClick={() => setCritSpells((c) => ({ ...c, [id]: !c[id] }))} title="Spunta se il tiro per colpire era un 20 naturale, per raddoppiare i dadi danno">🎲 Critico?</button>}
