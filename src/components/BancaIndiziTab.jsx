@@ -7,7 +7,7 @@ function BancaIndiziTab({ indizi, setIndizi }) {
   const [filtro, setFiltro] = useState("tutti"); // tutti | da_rivelare | rivelati
   const [query, setQuery] = useState("");
 
-  const aggiungiIndizio = () => setIndizi([...indizi, { id: uid(), titolo: "Nuovo indizio", descrizione: "", collegatoA: "", rivelato: false }]);
+  const aggiungiIndizio = () => setIndizi([{ id: uid(), titolo: "Nuovo indizio", descrizione: "", collegatoA: "", rivelato: false }, ...indizi]);
   const aggiornaIndizio = (id, patch) => setIndizi(indizi.map((i) => (i.id === id ? { ...i, ...patch } : i)));
   const rimuoviIndizio = (id) => setIndizi(indizi.filter((i) => i.id !== id));
 
@@ -30,7 +30,7 @@ function BancaIndiziTab({ indizi, setIndizi }) {
         <button style={styles.primaryBtn} onClick={aggiungiIndizio}>+ Nuovo Indizio</button>
       </div>
 
-      <div style={styles.sectionDivider} />
+      <div style={{ ...styles.sectionDivider, marginTop: 16, marginBottom: 16 }} />
 
       {elenco.length === 0 ? (
         <p style={styles.hint}>Nessun indizio da mostrare con questo filtro.</p>
