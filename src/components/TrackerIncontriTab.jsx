@@ -6,7 +6,7 @@ import { SOGLIE_PE_PER_LIVELLO, moltiplicatorePerNumeroMostri } from '../data/in
 import { NumInput } from './shared.jsx';
 
 function TrackerIncontriTab({ mostri }) {
-  const [giocatori, setGiocatori] = useState([{ id: uid(), livello: 1 }, { id: uid(), livello: 1 }, { id: uid(), livello: 1 }, { id: uid(), livello: 1 }]);
+  const [giocatori, setGiocatori] = useState([]);
   const [mostriScelti, setMostriScelti] = useState([]); // { id, mostroId o gsManuale, nome, quantita }
 
   const aggiungiGiocatore = () => setGiocatori([...giocatori, { id: uid(), livello: 1 }]);
