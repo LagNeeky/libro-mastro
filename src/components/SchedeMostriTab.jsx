@@ -74,10 +74,10 @@ function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll }) {
         </select>
         <button style={styles.newPgBtn} onClick={aggiungiMostro}>+ Nuova</button>
         <button style={styles.smallBtn} onClick={() => duplicaMostro(attivo)}>⧉ Duplica</button>
-        <button style={styles.pgDelBtn} onClick={() => rimuoviMostro(attivo.id)}>✕ Elimina</button>
+        <button style={{ ...styles.pgDelBtn, marginLeft: "auto" }} onClick={() => rimuoviMostro(attivo.id)}>✕</button>
       </div>
 
-      <div style={styles.sectionDivider} />
+      <div style={{ ...styles.sectionDivider, marginTop: 16, marginBottom: 16 }} />
 
       <div style={styles.invRow}>
         <input style={{ ...styles.invNome, fontWeight: 700, fontSize: 16 }} value={attivo.nome} onChange={(e) => updateAttivo({ nome: e.target.value })} />
@@ -96,9 +96,21 @@ function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll }) {
       <div style={styles.hpGrid}>
         <div style={styles.hpBox}>
           <div style={styles.hpBoxLabel}>Grado di Sfida</div>
-          <select style={styles.slotTotaliInput} value={attivo.gs} onChange={(e) => updateAttivo({ gs: e.target.value })}>
-            {Object.keys(GS_BONUS_COMPETENZA).map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
+          <input
+            style={styles.gsInput}
+            value={attivo.gs}
+            onChange={(e) => updateAttivo({ gs: e.target.value })}
+            onBlur={(e) => { if (!(e.target.value in GS_BONUS_COMPETENZA)) updateAttivo({ gs: "1" }); }}
+            onWheel={(e) => {
+              e.preventDefault();
+              const chiavi = Object.keys(GS_BONUS_COMPETENZA);
+              const idxAttuale = chiavi.indexOf(attivo.gs);
+              const idx = idxAttuale === -1 ? 0 : idxAttuale;
+              const nuovoIdx = Math.max(0, Math.min(chiavi.length - 1, idx + (e.deltaY < 0 ? 1 : -1)));
+              updateAttivo({ gs: chiavi[nuovoIdx] });
+            }}
+            title="Scrivi il Grado di Sfida a mano, oppure usa la rotellina del mouse per scorrere i valori"
+          />
           <div style={styles.slotEmptyHint}>Comp. {fmt(bonusComp)}</div>
         </div>
         <div style={styles.hpBox}>
