@@ -26,6 +26,11 @@ import EquipTab from "./components/EquipTab.jsx";
 import AppuntiTab from "./components/AppuntiTab.jsx";
 import ConoscenzaTab from "./components/ConoscenzaTab.jsx";
 import MappeTab from "./components/MappeTab.jsx";
+import SchedeMostriTab from "./components/SchedeMostriTab.jsx";
+import TrackerTurniTab from "./components/TrackerTurniTab.jsx";
+import TrackerIncontriTab from "./components/TrackerIncontriTab.jsx";
+import DiarioSessioneTab from "./components/DiarioSessioneTab.jsx";
+import BancaIndiziTab from "./components/BancaIndiziTab.jsx";
 import InfoModal from "./components/InfoModal.jsx";
 
 const TABS = [
@@ -33,6 +38,9 @@ const TABS = [
   { id: "razze", label: "Razze" }, { id: "classi", label: "Classi" }, { id: "trasfondi", label: "Background" }, { id: "talenti_catalogo", label: "Talenti" },
   { id: "incantesimi", label: "Incantesimi" }, { id: "equip", label: "Armi, Armature & Accessori" },
   { id: "appunti", label: "Appunti" }, { id: "conoscenza", label: "Conoscenza" }, { id: "mappe", label: "Mappe" },
+  { id: "tracker_turni", label: "Tracker Turni" }, { id: "schede_mostri", label: "Schede Mostri & PNG" },
+  { id: "mappe_master", label: "Mappe (Master)" }, { id: "appunti_master", label: "Appunti (Master)" }, { id: "conoscenza_master", label: "Conoscenza (Master)" },
+  { id: "tracker_incontri", label: "Tracker Incontri" }, { id: "diario_sessione", label: "Diario di Sessione" }, { id: "banca_indizi", label: "Banca Indizi & Segreti" },
 ];
 
 export default function LibroMastro() {
@@ -63,11 +71,19 @@ export default function LibroMastro() {
   const [appunti, setAppunti, appuntiLoaded] = usePersistentState("appunti", []);
   const [documenti, setDocumenti, documentiLoaded] = usePersistentState("documenti", []);
   const [mappe, setMappe, mappeLoaded] = usePersistentState("mappe", []);
+  const [mostri, setMostri, mostriLoaded] = usePersistentState("mostri", []);
+  const [tracker, setTracker, trackerLoaded] = usePersistentState("tracker", { combattenti: [], round: 1, turnoAttivoId: null });
+  const [appuntiMaster, setAppuntiMaster, appuntiMasterLoaded] = usePersistentState("appuntiMaster", []);
+  const [documentiMaster, setDocumentiMaster, documentiMasterLoaded] = usePersistentState("documentiMaster", []);
+  const [mappeMaster, setMappeMaster, mappeMasterLoaded] = usePersistentState("mappeMaster", []);
+  const [sessioni, setSessioni, sessioniLoaded] = usePersistentState("sessioni", []);
+  const [indizi, setIndizi, indiziLoaded] = usePersistentState("indizi", []);
 
   const tuttoCaricato = tabOrderLoaded && skillsLoaded && razzeLoaded && sottorazzeLoaded && classiLoaded &&
     sottoclassiLoaded && armiLoaded && armatureLoaded && accessoriLoaded && incantesimiLoaded &&
     backgroundsLoaded && talentiCatalogoLoaded && competenzeGenericheLoaded && infusioniLoaded &&
-    personaggiLoaded && appuntiLoaded && documentiLoaded && mappeLoaded;
+    personaggiLoaded && appuntiLoaded && documentiLoaded && mappeLoaded &&
+    mostriLoaded && trackerLoaded && appuntiMasterLoaded && documentiMasterLoaded && mappeMasterLoaded && sessioniLoaded && indiziLoaded;
 
   const orderedTabs = tabOrder.map((id) => TABS.find((t) => t.id === id)).filter(Boolean);
   const spostaTab = (targetId) => {
@@ -189,6 +205,14 @@ export default function LibroMastro() {
         {tab === "appunti" && <AppuntiTab appunti={appunti} setAppunti={setAppunti} />}
         {tab === "conoscenza" && <ConoscenzaTab documenti={documenti} setDocumenti={setDocumenti} />}
         {tab === "mappe" && <MappeTab mappe={mappe} setMappe={setMappe} />}
+        {tab === "tracker_turni" && <TrackerTurniTab personaggi={personaggi} mostri={mostri} tracker={tracker} setTracker={setTracker} openDiceRoll={openDiceRoll} />}
+        {tab === "schede_mostri" && <SchedeMostriTab mostri={mostri} setMostri={setMostri} openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} />}
+        {tab === "mappe_master" && <MappeTab mappe={mappeMaster} setMappe={setMappeMaster} />}
+        {tab === "appunti_master" && <AppuntiTab appunti={appuntiMaster} setAppunti={setAppuntiMaster} />}
+        {tab === "conoscenza_master" && <ConoscenzaTab documenti={documentiMaster} setDocumenti={setDocumentiMaster} />}
+        {tab === "tracker_incontri" && <TrackerIncontriTab mostri={mostri} />}
+        {tab === "diario_sessione" && <DiarioSessioneTab sessioni={sessioni} setSessioni={setSessioni} />}
+        {tab === "banca_indizi" && <BancaIndiziTab indizi={indizi} setIndizi={setIndizi} />}
       </main>
       <RollModal roll={roll} onClose={() => setRoll(null)} onChangeMode={changeRollMode} onRoll={performRoll} />
       <DetailModal detail={detail} onClose={() => setDetail(null)} classi={classi} />
