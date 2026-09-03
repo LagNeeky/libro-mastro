@@ -93,6 +93,7 @@ function TrackerTurniTab({ personaggi, mostri, tracker, setTracker, openDiceRoll
 
       <div style={styles.roundBar}>
         <div style={styles.roundLabel}>Round {round}</div>
+        <div style={styles.turnoAttualeLabel}>Turno: {combattentiOrdinati.find((c) => c.id === turnoAttivoId)?.nome || "—"}</div>
         <button style={styles.smallBtn} onClick={turnoPrecedente}>◀ Turno Precedente</button>
         <button style={styles.primaryBtn} onClick={prossimoTurno}>Turno Successivo ▶</button>
         <button style={styles.smallBtn} onClick={ordinaPerIniziativa}>🔄 Riordina per Iniziativa</button>
@@ -116,7 +117,7 @@ function TrackerTurniTab({ personaggi, mostri, tracker, setTracker, openDiceRoll
         <button style={styles.smallBtn} onClick={aggiungiRapido}>+ Aggiungi al Volo</button>
       </div>
 
-      <div style={styles.sectionDivider} />
+      <div style={{ ...styles.sectionDivider, marginTop: 16, marginBottom: 16 }} />
 
       {combattentiOrdinati.length === 0 ? (
         <p style={styles.hint}>Nessun combattente ancora. Aggiungine uno con i controlli sopra.</p>
