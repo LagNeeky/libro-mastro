@@ -12,7 +12,7 @@ function ListaLibera({ titolo, voci, onChange, placeholderNome, placeholderDesc 
     <div style={{ marginBottom: 12 }}>
       <div style={styles.columnTitleLeft}>{titolo}</div>
       {voci.map((v) => (
-        <div key={v.id} style={styles.itemGroup}>
+        <div key={v.id} style={{ ...styles.itemGroup, marginBottom: 8 }}>
           <div style={styles.itemRow}>
             <input style={{ ...styles.overrideInput, flex: 1, fontWeight: 700 }} placeholder={placeholderNome} value={v.nome} onChange={(e) => aggiorna(v.id, { nome: e.target.value })} />
             <button style={styles.pgDelBtn} onClick={() => rimuovi(v.id)}>✕</button>
@@ -81,15 +81,15 @@ function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll }) {
 
       <div style={{ ...styles.invTable, marginBottom: 14 }}>
         <div style={styles.invRow}>
-          <input style={{ ...styles.invNome, fontWeight: 700, fontSize: 16 }} value={attivo.nome} onChange={(e) => updateAttivo({ nome: e.target.value })} />
-          <select style={styles.invPos} value={attivo.tipo} onChange={(e) => updateAttivo({ tipo: e.target.value })}>
+          <input style={{ ...styles.invNome, flex: 1, fontWeight: 700, fontSize: 16 }} value={attivo.nome} onChange={(e) => updateAttivo({ nome: e.target.value })} />
+          <select style={{ ...styles.invPos, flex: 1 }} value={attivo.tipo} onChange={(e) => updateAttivo({ tipo: e.target.value })}>
             <option value="Mostro">Mostro</option>
             <option value="PNG">PNG</option>
           </select>
         </div>
         <div style={styles.invRow}>
-          <input style={styles.invNome} placeholder="Taglia (es. Media)" value={attivo.taglia} onChange={(e) => updateAttivo({ taglia: e.target.value })} />
-          <input style={styles.invPos} placeholder="Allineamento" value={attivo.allineamento} onChange={(e) => updateAttivo({ allineamento: e.target.value })} />
+          <input style={{ ...styles.invNome, flex: 1 }} placeholder="Taglia (es. Media)" value={attivo.taglia} onChange={(e) => updateAttivo({ taglia: e.target.value })} />
+          <input style={{ ...styles.invPos, flex: 1 }} placeholder="Allineamento" value={attivo.allineamento} onChange={(e) => updateAttivo({ allineamento: e.target.value })} />
         </div>
       </div>
 
@@ -148,40 +148,35 @@ function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll }) {
         ))}
       </div>
 
-      <div style={styles.invRow}>
-        <div style={styles.invNome}>Tiri Salvezza con Competenza</div>
-        <input style={styles.invPos} placeholder="es. Des +5, Sag +3" value={attivo.tiriSalvezza} onChange={(e) => updateAttivo({ tiriSalvezza: e.target.value })} />
-        <div style={styles.invSpacer} />
-      </div>
-      <div style={styles.invRow}>
-        <div style={styles.invNome}>Abilità con Competenza</div>
-        <input style={styles.invPos} placeholder="es. Percezione +5, Furtività +4" value={attivo.competenzeAbilita} onChange={(e) => updateAttivo({ competenzeAbilita: e.target.value })} />
-        <div style={styles.invSpacer} />
-      </div>
-      <div style={styles.invRow}>
-        <div style={styles.invNome}>Resistenze ai Danni</div>
-        <input style={styles.invPos} value={attivo.resistenze} onChange={(e) => updateAttivo({ resistenze: e.target.value })} />
-        <div style={styles.invSpacer} />
-      </div>
-      <div style={styles.invRow}>
-        <div style={styles.invNome}>Immunità ai Danni</div>
-        <input style={styles.invPos} value={attivo.immunitaDanno} onChange={(e) => updateAttivo({ immunitaDanno: e.target.value })} />
-        <div style={styles.invSpacer} />
-      </div>
-      <div style={styles.invRow}>
-        <div style={styles.invNome}>Immunità alle Condizioni</div>
-        <input style={styles.invPos} value={attivo.immunitaCondizione} onChange={(e) => updateAttivo({ immunitaCondizione: e.target.value })} />
-        <div style={styles.invSpacer} />
-      </div>
-      <div style={styles.invRow}>
-        <div style={styles.invNome}>Sensi</div>
-        <input style={styles.invPos} placeholder="es. Scurovisione 18 m, Percezione Passiva 13" value={attivo.sensi} onChange={(e) => updateAttivo({ sensi: e.target.value })} />
-        <div style={styles.invSpacer} />
-      </div>
-      <div style={styles.invRow}>
-        <div style={styles.invNome}>Linguaggi</div>
-        <input style={styles.invPos} value={attivo.linguaggi} onChange={(e) => updateAttivo({ linguaggi: e.target.value })} />
-        <div style={styles.invSpacer} />
+      <div style={styles.invTable}>
+        <div style={styles.invRow}>
+          <div style={styles.invNome}>Tiri Salvezza con Competenza</div>
+          <input style={styles.invPos} placeholder="es. Des +5, Sag +3" value={attivo.tiriSalvezza} onChange={(e) => updateAttivo({ tiriSalvezza: e.target.value })} />
+        </div>
+        <div style={styles.invRow}>
+          <div style={styles.invNome}>Abilità con Competenza</div>
+          <input style={styles.invPos} placeholder="es. Percezione +5, Furtività +4" value={attivo.competenzeAbilita} onChange={(e) => updateAttivo({ competenzeAbilita: e.target.value })} />
+        </div>
+        <div style={styles.invRow}>
+          <div style={styles.invNome}>Resistenze ai Danni</div>
+          <input style={styles.invPos} value={attivo.resistenze} onChange={(e) => updateAttivo({ resistenze: e.target.value })} />
+        </div>
+        <div style={styles.invRow}>
+          <div style={styles.invNome}>Immunità ai Danni</div>
+          <input style={styles.invPos} value={attivo.immunitaDanno} onChange={(e) => updateAttivo({ immunitaDanno: e.target.value })} />
+        </div>
+        <div style={styles.invRow}>
+          <div style={styles.invNome}>Immunità alle Condizioni</div>
+          <input style={styles.invPos} value={attivo.immunitaCondizione} onChange={(e) => updateAttivo({ immunitaCondizione: e.target.value })} />
+        </div>
+        <div style={styles.invRow}>
+          <div style={styles.invNome}>Sensi</div>
+          <input style={styles.invPos} placeholder="es. Scurovisione 18 m, Percezione Passiva 13" value={attivo.sensi} onChange={(e) => updateAttivo({ sensi: e.target.value })} />
+        </div>
+        <div style={styles.invRow}>
+          <div style={styles.invNome}>Linguaggi</div>
+          <input style={styles.invPos} value={attivo.linguaggi} onChange={(e) => updateAttivo({ linguaggi: e.target.value })} />
+        </div>
       </div>
 
       <div style={styles.sectionDivider} />
