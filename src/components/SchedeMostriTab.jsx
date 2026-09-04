@@ -79,18 +79,18 @@ function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll }) {
 
       <div style={{ ...styles.sectionDivider, marginTop: 16, marginBottom: 16 }} />
 
-      <div style={styles.invRow}>
-        <input style={{ ...styles.invNome, fontWeight: 700, fontSize: 16 }} value={attivo.nome} onChange={(e) => updateAttivo({ nome: e.target.value })} />
-        <select style={styles.invPos} value={attivo.tipo} onChange={(e) => updateAttivo({ tipo: e.target.value })}>
-          <option value="Mostro">Mostro</option>
-          <option value="PNG">PNG</option>
-        </select>
-        <div style={styles.invSpacer} />
-      </div>
-      <div style={styles.invRow}>
-        <input style={styles.invNome} placeholder="Taglia (es. Media)" value={attivo.taglia} onChange={(e) => updateAttivo({ taglia: e.target.value })} />
-        <input style={styles.invPos} placeholder="Allineamento" value={attivo.allineamento} onChange={(e) => updateAttivo({ allineamento: e.target.value })} />
-        <div style={styles.invSpacer} />
+      <div style={{ ...styles.invTable, marginBottom: 14 }}>
+        <div style={styles.invRow}>
+          <input style={{ ...styles.invNome, fontWeight: 700, fontSize: 16 }} value={attivo.nome} onChange={(e) => updateAttivo({ nome: e.target.value })} />
+          <select style={styles.invPos} value={attivo.tipo} onChange={(e) => updateAttivo({ tipo: e.target.value })}>
+            <option value="Mostro">Mostro</option>
+            <option value="PNG">PNG</option>
+          </select>
+        </div>
+        <div style={styles.invRow}>
+          <input style={styles.invNome} placeholder="Taglia (es. Media)" value={attivo.taglia} onChange={(e) => updateAttivo({ taglia: e.target.value })} />
+          <input style={styles.invPos} placeholder="Allineamento" value={attivo.allineamento} onChange={(e) => updateAttivo({ allineamento: e.target.value })} />
+        </div>
       </div>
 
       <div style={styles.hpGrid}>
