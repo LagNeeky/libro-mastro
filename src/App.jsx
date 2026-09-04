@@ -34,19 +34,20 @@ import BancaIndiziTab from "./components/BancaIndiziTab.jsx";
 import InfoModal from "./components/InfoModal.jsx";
 
 const TABS = [
-  { id: "schede", label: "Schede PG" }, { id: "identita", label: "Carta d'Identità" }, { id: "regole", label: "Regole" },
-  { id: "razze", label: "Razze" }, { id: "classi", label: "Classi" }, { id: "trasfondi", label: "Background" }, { id: "talenti_catalogo", label: "Talenti" },
-  { id: "incantesimi", label: "Incantesimi" }, { id: "equip", label: "Armi, Armature & Accessori" },
-  { id: "appunti", label: "Appunti" }, { id: "conoscenza", label: "Conoscenza" }, { id: "mappe", label: "Mappe" },
-  { id: "tracker_turni", label: "Tracker Turni" }, { id: "schede_mostri", label: "Schede Mostri & PNG" },
-  { id: "mappe_master", label: "Mappe (Master)" }, { id: "appunti_master", label: "Appunti (Master)" }, { id: "conoscenza_master", label: "Conoscenza (Master)" },
-  { id: "tracker_incontri", label: "Tracker Incontri" }, { id: "diario_sessione", label: "Diario di Sessione" }, { id: "banca_indizi", label: "Banca Indizi & Segreti" },
+  { id: "schede", label: "Schede PG", gruppo: "giocatore" }, { id: "identita", label: "Carta d'Identità", gruppo: "giocatore" }, { id: "regole", label: "Regole", gruppo: null },
+  { id: "razze", label: "Razze", gruppo: "giocatore" }, { id: "classi", label: "Classi", gruppo: "giocatore" }, { id: "trasfondi", label: "Background", gruppo: "giocatore" }, { id: "talenti_catalogo", label: "Talenti", gruppo: "giocatore" },
+  { id: "incantesimi", label: "Incantesimi", gruppo: "giocatore" }, { id: "equip", label: "Armi, Armature & Accessori", gruppo: "giocatore" },
+  { id: "appunti", label: "Appunti", gruppo: "giocatore" }, { id: "conoscenza", label: "Conoscenza", gruppo: "giocatore" }, { id: "mappe", label: "Mappe", gruppo: "giocatore" },
+  { id: "tracker_turni", label: "Tracker Turni", gruppo: "master" }, { id: "schede_mostri", label: "Schede Mostri & PNG", gruppo: "master" },
+  { id: "mappe_master", label: "Mappe (Master)", gruppo: "master" }, { id: "appunti_master", label: "Appunti (Master)", gruppo: "master" }, { id: "conoscenza_master", label: "Conoscenza (Master)", gruppo: "master" },
+  { id: "tracker_incontri", label: "Tracker Incontri", gruppo: "master" }, { id: "diario_sessione", label: "Diario di Sessione", gruppo: "master" }, { id: "banca_indizi", label: "Banca Indizi & Segreti", gruppo: "master" },
 ];
 
 export default function LibroMastro() {
   const [tab, setTab] = useState("schede");
   const [tabOrder, setTabOrder, tabOrderLoaded] = usePersistentState("tabOrder", TABS.map((t) => t.id));
   const [draggedTabId, setDraggedTabId] = useState(null);
+  const [navGroup, setNavGroup, navGroupLoaded] = usePersistentState("navGroup", "giocatore");
   const [showInfo, setShowInfo] = useState(false);
   const [regoleOpzionali, setRegoleOpzionali] = usePersistentState("regoleOpzionali", false);
 
@@ -83,11 +84,16 @@ export default function LibroMastro() {
     sottoclassiLoaded && armiLoaded && armatureLoaded && accessoriLoaded && incantesimiLoaded &&
     backgroundsLoaded && talentiCatalogoLoaded && competenzeGenericheLoaded && infusioniLoaded &&
     personaggiLoaded && appuntiLoaded && documentiLoaded && mappeLoaded &&
-    mostriLoaded && trackerLoaded && appuntiMasterLoaded && documentiMasterLoaded && mappeMasterLoaded && sessioniLoaded && indiziLoaded;
+    mostriLoaded && trackerLoaded && appuntiMasterLoaded && documentiMasterLoaded && mappeMasterLoaded && sessioniLoaded && indiziLoaded && navGroupLoaded;
 
   const orderedTabs = tabOrder.map((id) => TABS.find((t) => t.id === id)).filter(Boolean);
+  const tabsGruppo = orderedTabs.filter((t) => t.gruppo === navGroup);
+  const tabRegole = orderedTabs.find((t) => t.gruppo === null);
   const spostaTab = (targetId) => {
     if (!draggedTabId || draggedTabId === targetId) { setDraggedTabId(null); return; }
+    const draggedTab = TABS.find((t) => t.id === draggedTabId);
+    const targetTab = TABS.find((t) => t.id === targetId);
+    if (!draggedTab || !targetTab || draggedTab.gruppo !== targetTab.gruppo) { setDraggedTabId(null); return; }
     setTabOrder((order) => {
       const nuovo = order.filter((id) => id !== draggedTabId);
       const idx = nuovo.indexOf(targetId);
@@ -169,21 +175,35 @@ export default function LibroMastro() {
           <button style={styles.smallBtn} onClick={() => setShowInfo(true)}>ℹ️ Come funziona</button>
         </div>
         <nav style={styles.tabs}>
-          {orderedTabs.map((t) => (
-            <button
-              key={t.id}
-              draggable
-              onDragStart={() => setDraggedTabId(t.id)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => spostaTab(t.id)}
-              onDragEnd={() => setDraggedTabId(null)}
-              onClick={() => setTab(t.id)}
-              style={{ ...styles.tabBtn, ...(tab === t.id ? styles.tabBtnActive : {}), ...(draggedTabId === t.id ? styles.tabBtnDragging : {}) }}
-              title="Trascina per riordinare"
-            >
-              {t.label}
-            </button>
-          ))}
+          <div style={styles.navGroupSwitch}>
+            <button style={{ ...styles.navGroupBtn, ...(navGroup === "giocatore" ? styles.navGroupBtnActive : {}) }} onClick={() => setNavGroup("giocatore")}>Giocatore +</button>
+            <button style={{ ...styles.navGroupBtn, ...(navGroup === "master" ? styles.navGroupBtnActive : {}) }} onClick={() => setNavGroup("master")}>Master +</button>
+            {tabRegole && (
+              <button
+                onClick={() => setTab(tabRegole.id)}
+                style={{ ...styles.navGroupBtn, ...styles.navGroupBtnRegole, ...(tab === tabRegole.id ? styles.navGroupBtnActive : {}) }}
+              >
+                {tabRegole.label}
+              </button>
+            )}
+          </div>
+          <div style={styles.tabsRow}>
+            {tabsGruppo.map((t) => (
+              <button
+                key={t.id}
+                draggable
+                onDragStart={() => setDraggedTabId(t.id)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => spostaTab(t.id)}
+                onDragEnd={() => setDraggedTabId(null)}
+                onClick={() => setTab(t.id)}
+                style={{ ...styles.tabBtn, ...(tab === t.id ? styles.tabBtnActive : {}), ...(draggedTabId === t.id ? styles.tabBtnDragging : {}) }}
+                title="Trascina per riordinare (solo dentro lo stesso gruppo)"
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </nav>
       </header>
       <main style={styles.main}>
