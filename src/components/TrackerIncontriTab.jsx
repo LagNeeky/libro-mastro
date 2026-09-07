@@ -5,7 +5,7 @@ import { GS_PUNTI_ESPERIENZA } from '../data/creatura.js';
 import { SOGLIE_PE_PER_LIVELLO, moltiplicatorePerNumeroMostri } from '../data/incontri.js';
 import { NumInput } from './shared.jsx';
 
-function TrackerIncontriTab({ mostri }) {
+function TrackerIncontriTab({ mostri, apriSchedaInNuovaFinestra }) {
   const [giocatori, setGiocatori] = useState([]);
   const [mostriScelti, setMostriScelti] = useState([]); // { id, mostroId o gsManuale, nome, quantita }
 
@@ -74,6 +74,9 @@ function TrackerIncontriTab({ mostri }) {
       {mostriScelti.map((m) => (
         <div key={m.id} style={styles.itemRow}>
           <input style={{ ...styles.overrideInput, flex: 1 }} value={m.nome} onChange={(e) => aggiornaMostroScelto(m.id, { nome: e.target.value })} disabled={!!m.mostroId} />
+          {m.mostroId && (
+            <button style={styles.smallBtn} onClick={() => apriSchedaInNuovaFinestra("mostro", m.mostroId)} title="Apri la scheda collegata in un'altra finestra">🔗</button>
+          )}
           <label style={styles.modLabel}>GS
             <select style={styles.modInput} value={m.gs} onChange={(e) => aggiornaMostroScelto(m.id, { gs: e.target.value })} disabled={!!m.mostroId}>
               {Object.keys(GS_PUNTI_ESPERIENZA).map((g) => <option key={g} value={g}>{g}</option>)}
