@@ -16,6 +16,11 @@ const DEFAULT_RAZZE = [
 ].map((r) => ({ ...r, custom: false }));
 
 const DEFAULT_SOTTORAZZE = [
+  { id: "umano_variante", razzaId: "umano", nome: "Umano Variante", bonus: { FOR: 0, DES: 0, COS: 0, INT: 0, SAG: 0, CAR: 0 }, tratti: [
+    { nome: "Caratteristiche Variabili", desc: "Invece del bonus standard, scegli liberamente +1 a due caratteristiche diverse a tua scelta (aggiorna a mano i punteggi sulla scheda)." },
+    { nome: "Competenza in un'Abilità", desc: "Ottieni competenza in un'abilità a tua scelta." },
+    { nome: "Talento Bonus", desc: "Ottieni un talento a tua scelta, tra quelli per cui soddisfi i prerequisiti." },
+  ], custom: false },
   { id: "alto_elfo", razzaId: "elfo", nome: "Alto Elfo", bonus: { ...zeroBonus(), INT: 1 }, tratti: [{ nome: "Trucchetto Arcano", desc: "Conosci un trucchetto a scelta dalla lista incantesimi da Mago." }] },
   { id: "elfo_silvano", razzaId: "elfo", nome: "Elfo Silvano", velocita: "10,5 m", bonus: { ...zeroBonus(), SAG: 1 }, tratti: [{ nome: "Passo Felpato", desc: "Velocità aumentata di 1,5 m." }, { nome: "Maschera della Foresta", desc: "Puoi tentare di nasconderti anche quando sei solo lievemente oscurato da fogliame, pioggia intensa, nebbia o altri fenomeni naturali." }] },
   { id: "elfo_scuro", razzaId: "elfo", nome: "Elfo Scuro (Drow)", bonus: { ...zeroBonus(), CAR: 1 }, tratti: [{ nome: "Scurovisione Superiore", desc: "Scurovisione fino a 36 m." }, { nome: "Sensibilità alla Luce del Sole", desc: "Svantaggio ai tiri per colpire e alle prove di Percezione basate sulla vista quando ti trovi sotto la luce diretta del sole." }, { nome: "Magia Drow", desc: "Conosci il trucchetto Luci Danzanti. Al 3° livello puoi lanciare Fuoco Fatuo una volta per riposo lungo; al 5° livello puoi lanciare Oscurità una volta per riposo lungo (Carisma come caratteristica)." }] },
