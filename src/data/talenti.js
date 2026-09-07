@@ -1,7 +1,7 @@
 // Talenti ufficiali del Manuale del Giocatore (5e 2014)
 
 const DEFAULT_TALENTI_CATALOGO = [
-  { id: "vigile", nome: "Vigile", prerequisito: "", desc: "+5 all'iniziativa. Non puoi essere sorpreso mentre sei cosciente, e altre creature non ottengono vantaggio contro di te per il fatto di essere nascoste, a meno che non siano invisibili." },
+  { id: "vigile", nome: "Vigile", prerequisito: "", desc: "+5 all'iniziativa. Non puoi essere sorpreso mentre sei cosciente, e altre creature non ottengono vantaggio contro di te per il fatto di essere nascoste, a meno che non siano invisibili.", effettoAuto: { applicaA: "Iniziativa", valore: 5 } },
   { id: "atleta", nome: "Atleta", prerequisito: "", desc: "+1 a Forza o Destrezza. Alzarti da terra costa solo una parte del tuo movimento, arrampicarti non ti impone il costo doppio, e puoi effettuare una rincorsa da fermo per un salto." },
   { id: "attore", nome: "Attore", prerequisito: "", desc: "+1 a Carisma. Vantaggio alle prove di Inganno o Intrattenere per imitare le maniere e l'accento di un'altra persona, e puoi imitarne anche la voce." },
   { id: "carica", nome: "Carica", prerequisito: "", desc: "Come azione bonus dopo esserti mosso di almeno 3 metri in linea retta, puoi effettuare un attacco in mischia che, se colpisce, infligge 1d8 danni extra o spinge il bersaglio di 3 metri." },
@@ -39,7 +39,7 @@ const DEFAULT_TALENTI_CATALOGO = [
   { id: "furtivo", nome: "Furtivo", prerequisito: "DES 13+", desc: "Vantaggio alle prove di Furtività, puoi tentare di nasconderti anche se solo lievemente oscurato, e restare nascosto anche muovendoti a velocità normale (con svantaggio)." },
   { id: "cecchino_incantesimi", nome: "Cecchino Incantesimi", prerequisito: "Capacità di lanciare incantesimi", desc: "+1 alla caratteristica da incantatore. Raddoppi la gittata dei tuoi incantesimi d'attacco, e ignori la copertura parziale nei bersagli." },
   { id: "risse_taverna", nome: "Risse da Taverna", prerequisito: "", desc: "+1 a Forza o Costituzione. Competenza con armi improvvisate, il tuo pugno chiuso infligge 1d4 danni contundenti, e puoi afferrare come azione bonus dopo aver colpito con un'arma improvvisata." },
-  { id: "coriaceo", nome: "Coriaceo", prerequisito: "", desc: "Guadagni 2 PF extra per ogni livello di personaggio che hai o che otterrai in futuro." },
+  { id: "coriaceo", nome: "Robusto", prerequisito: "", desc: "Guadagni 2 PF extra per ogni livello di personaggio che hai o che otterrai in futuro." },
   { id: "mago_di_guerra", nome: "Mago di Guerra", prerequisito: "Capacità di lanciare incantesimi", desc: "+1 alla caratteristica da incantatore. Vantaggio ai TS di Concentrazione, e puoi effettuare le componenti somatiche di un incantesimo anche impugnando armi e scudi." },
   { id: "maestro_armi", nome: "Maestro d'Armi", prerequisito: "", desc: "+1 a Forza o Destrezza. Ottieni competenza con due armi da guerra a tua scelta, e ne scegli due con cui applicare un modello di attacco tattico più efficace." },
   { id: "iniziato_magia", nome: "Iniziato alla Magia", prerequisito: "", desc: "Impari due trucchetti e un incantesimo di 1° livello dalla lista di una classe incantatrice a tua scelta; puoi lanciare l'incantesimo di 1° livello una volta al giorno senza spendere uno slot, o usando i tuoi slot incantesimo normali per lanciarlo più volte." },
