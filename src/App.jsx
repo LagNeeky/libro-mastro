@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styles, globalCss } from "./styles.js";
 import { rollD20, rollDiceNotation } from "./utils/dice.js";
 import { usePersistentState, useCatalogState } from "./utils/usePersistentState.js";
@@ -45,6 +45,25 @@ const TABS = [
 
 export default function LibroMastro() {
   const [tab, setTab] = useState("schede");
+  const [apriMostroId, setApriMostroId] = useState(null);
+
+  useEffect(() => {
+    const parametri = new URLSearchParams(window.location.search);
+    const apriTab = parametri.get("apriTab");
+    const apriPgId = parametri.get("pgId");
+    const apriMId = parametri.get("mostroId");
+    if (apriTab === "schede" && apriPgId) { setTab("schede"); setAttivoId(apriPgId); }
+    if (apriTab === "schede_mostri" && apriMId) { setTab("schede_mostri"); setApriMostroId(apriMId); }
+    if (apriTab && !apriPgId && !apriMId) setTab(apriTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const apriSchedaInNuovaFinestra = (fonte, id) => {
+    if (!id) return;
+    const url = new URL(window.location.href);
+    url.search = fonte === "pg" ? `?apriTab=schede&pgId=${id}` : `?apriTab=schede_mostri&mostroId=${id}`;
+    window.open(url.toString(), "_blank");
+  };
   const [tabOrder, setTabOrder, tabOrderLoaded] = usePersistentState("tabOrder", TABS.map((t) => t.id));
   const [draggedTabId, setDraggedTabId] = useState(null);
   const [navGroup, setNavGroup, navGroupLoaded] = usePersistentState("navGroup", "giocatore");
@@ -225,12 +244,12 @@ export default function LibroMastro() {
         {tab === "appunti" && <AppuntiTab appunti={appunti} setAppunti={setAppunti} />}
         {tab === "conoscenza" && <ConoscenzaTab documenti={documenti} setDocumenti={setDocumenti} />}
         {tab === "mappe" && <MappeTab mappe={mappe} setMappe={setMappe} />}
-        {tab === "tracker_turni" && <TrackerTurniTab personaggi={personaggi} mostri={mostri} tracker={tracker} setTracker={setTracker} openDiceRoll={openDiceRoll} />}
-        {tab === "schede_mostri" && <SchedeMostriTab mostri={mostri} setMostri={setMostri} openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} />}
+        {tab === "tracker_turni" && <TrackerTurniTab personaggi={personaggi} mostri={mostri} tracker={tracker} setTracker={setTracker} openDiceRoll={openDiceRoll} apriSchedaInNuovaFinestra={apriSchedaInNuovaFinestra} />}
+        {tab === "schede_mostri" && <SchedeMostriTab mostri={mostri} setMostri={setMostri} openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} apriMostroId={apriMostroId} />}
         {tab === "mappe_master" && <MappeTab mappe={mappeMaster} setMappe={setMappeMaster} />}
         {tab === "appunti_master" && <AppuntiTab appunti={appuntiMaster} setAppunti={setAppuntiMaster} />}
         {tab === "conoscenza_master" && <ConoscenzaTab documenti={documentiMaster} setDocumenti={setDocumentiMaster} />}
-        {tab === "tracker_incontri" && <TrackerIncontriTab mostri={mostri} />}
+        {tab === "tracker_incontri" && <TrackerIncontriTab mostri={mostri} apriSchedaInNuovaFinestra={apriSchedaInNuovaFinestra} />}
         {tab === "diario_sessione" && <DiarioSessioneTab sessioni={sessioni} setSessioni={setSessioni} />}
         {tab === "banca_indizi" && <BancaIndiziTab indizi={indizi} setIndizi={setIndizi} />}
       </main>
