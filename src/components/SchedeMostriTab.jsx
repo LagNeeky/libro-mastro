@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styles } from '../styles.js';
 import { uid, mod, fmt, ABILITIES, ABILITY_LABELS } from '../utils/helpers.js';
 import { newCreatura, GS_BONUS_COMPETENZA } from '../data/creatura.js';
@@ -25,9 +25,10 @@ function ListaLibera({ titolo, voci, onChange, placeholderNome, placeholderDesc 
   );
 }
 
-function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll }) {
+function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll, apriMostroId }) {
   const [attivoId, setAttivoId] = useState(mostri[0]?.id || null);
   const [query, setQuery] = useState("");
+  useEffect(() => { if (apriMostroId && mostri.some((m) => m.id === apriMostroId)) setAttivoId(apriMostroId); }, [apriMostroId, mostri]);
   const attivo = mostri.find((m) => m.id === attivoId) || mostri[0];
 
   const aggiungiMostro = () => {
