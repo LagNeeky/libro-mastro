@@ -8,7 +8,7 @@ const CONDIZIONI_STANDARD = [
   "Incapacitato", "Incatenato", "Invisibile", "Immobilizzato", "Prono", "Stordito", "Paralizzato", "Pietrificato", "Morente",
 ];
 
-function TrackerTurniTab({ personaggi, mostri, tracker, setTracker, openDiceRoll }) {
+function TrackerTurniTab({ personaggi, mostri, tracker, setTracker, openDiceRoll, apriSchedaInNuovaFinestra }) {
   const [nomeRapido, setNomeRapido] = useState("");
   const [iniziativaRapida, setIniziativaRapida] = useState(10);
 
@@ -128,8 +128,17 @@ function TrackerTurniTab({ personaggi, mostri, tracker, setTracker, openDiceRoll
           return (
             <div key={c.id} style={{ ...styles.itemGroup, ...(attivo ? styles.combattenteAttivo : {}) }}>
               <div style={styles.itemRow}>
-                {attivo && <span style={styles.turnoIndicatore} title="Turno attuale">▶</span>}
+                <button
+                  style={attivo ? styles.turnoIndicatoreAttivo : styles.turnoIndicatoreInattivo}
+                  onClick={() => aggiornaTracker({ turnoAttivoId: c.id })}
+                  title={attivo ? "È il turno di questo combattente" : "Imposta come turno attuale (utile se qualcuno ritarda l'azione)"}
+                >
+                  ▶
+                </button>
                 <input style={{ ...styles.overrideInput, flex: 1, fontWeight: 700, ...(morente ? { color: palette.dangerRed } : {}) }} value={c.nome} onChange={(e) => aggiornaCombattente(c.id, { nome: e.target.value })} />
+                {(c.fonte === "pg" || c.fonte === "mostro") && (
+                  <button style={styles.smallBtn} onClick={() => apriSchedaInNuovaFinestra(c.fonte, c.fonteId)} title="Apri la scheda collegata in un'altra finestra">🔗 Apri scheda</button>
+                )}
                 <label style={styles.modLabel}>Iniz.<NumInput min={-10} max={40} style={styles.modInput} value={c.iniziativa} onCommit={(n) => aggiornaCombattente(c.id, { iniziativa: n })} /></label>
                 <label style={styles.modLabel}>CA<input style={styles.modInput} value={c.ca} onChange={(e) => aggiornaCombattente(c.id, { ca: e.target.value })} /></label>
                 <label style={styles.modLabel}>PF Max<NumInput min={0} max={9999} style={styles.modInput} value={c.pfMax} onCommit={(n) => aggiornaCombattente(c.id, { pfMax: n })} /></label>
