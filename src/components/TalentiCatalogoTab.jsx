@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { styles } from '../styles.js';
 import { uid } from '../utils/helpers.js';
 import { FormModal } from './shared.jsx';
+import ExportSelectModal from './ExportSelectModal.jsx';
+import { leggiFileImportati, smistaEImporta } from '../utils/importExport.js';
 
 function TalentiCatalogoTab({ talentiCatalogo, setTalentiCatalogo, openDetail, pg, updatePg }) {
   const [showForm, setShowForm] = useState(false);
@@ -9,6 +11,18 @@ function TalentiCatalogoTab({ talentiCatalogo, setTalentiCatalogo, openDetail, p
   const [form, setForm] = useState({ nome: "", prerequisito: "", desc: "" });
   const [query, setQuery] = useState("");
   const [queryEffetto, setQueryEffetto] = useState("");
+  const [showExport, setShowExport] = useState(false);
+  const importInputRef = useRef(null);
+  const [importMsg, setImportMsg] = useState("");
+
+  const gestisciImport = async (e) => {
+    const files = e.target.files;
+    if (!files || !files.length) return;
+    const risultati = await leggiFileImportati(files);
+    const { importati, tipiIgnorati } = smistaEImporta(risultati, { talento: setTalentiCatalogo }, uid);
+    setImportMsg(`Importati ${importati} elementi.${tipiIgnorati.length ? ` Ignorati alcuni file di tipo non compatibile con questa pagina: ${tipiIgnorati.join(", ")}.` : ""}`);
+    e.target.value = "";
+  };
 
   const apriNuovo = () => { setModificaId(null); setForm({ nome: "", prerequisito: "", desc: "" }); setShowForm(true); };
   const apriModifica = (t) => { setModificaId(t.id); setForm({ nome: t.nome, prerequisito: t.prerequisito, desc: t.desc }); setShowForm(true); };
@@ -48,6 +62,15 @@ function TalentiCatalogoTab({ talentiCatalogo, setTalentiCatalogo, openDetail, p
       <input style={styles.searchInput} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca un talento per nome..." />
       <input style={{ ...styles.searchInput, marginTop: 6 }} value={queryEffetto} onChange={(e) => setQueryEffetto(e.target.value)} placeholder="Cerca per effetto o descrizione (es. 'iniziativa', '+2', 'armatura pesante')..." />
       <button style={styles.primaryBtn} onClick={apriNuovo}>+ Nuovo talento</button>
+      <div style={styles.pgSelectorRow}>
+        <button style={styles.smallBtn} onClick={() => setShowExport(true)}>⬇ Esporta</button>
+        <button style={styles.smallBtn} onClick={() => importInputRef.current?.click()}>⬆ Importa</button>
+        <input ref={importInputRef} type="file" accept=".json,.zip" multiple style={{ display: "none" }} onChange={gestisciImport} />
+      </div>
+      {importMsg && <div style={styles.hint}>{importMsg}</div>}
+      {showExport && (
+        <ExportSelectModal nomeZip="talenti_libro_mastro" onClose={() => setShowExport(false)} gruppi={[{ tipo: "talento", etichetta: "Talenti", elementi: talentiCatalogo }]} />
+      )}
       <div style={{ ...styles.cardGrid, marginTop: 14 }}>
         {filtrati.map((t) => (
           <div key={t.id} style={styles.dataCard}>
