@@ -69,7 +69,7 @@ function ClassiTab({ classi, setClassi, sottoclassi, setSottoclassi, openDetail 
         <button onClick={() => setFiltroProgressione("")} style={{ ...styles.chip, ...(filtroProgressione === "" ? styles.chipActive : {}) }}>Tutte</button>
         {Object.keys(PROGRESSIONE_LABELS).map((p) => <button key={p} onClick={() => setFiltroProgressione(p)} style={{ ...styles.chip, ...(filtroProgressione === p ? styles.chipActive : {}) }}>{PROGRESSIONE_LABELS[p]}</button>)}
       </div>
-      <button style={styles.primaryBtn} onClick={apriNuovaClasse}>+ Nuova classe</button>
+      <button style={{ ...styles.primaryBtn, marginBottom: 10 }} onClick={apriNuovaClasse}>+ Nuova classe</button>
       <div style={styles.pgSelectorRow}>
         <button style={styles.smallBtn} onClick={() => setShowExport(true)}>⬇ Esporta</button>
         <button style={styles.smallBtn} onClick={() => importInputRef.current?.click()}>⬆ Importa</button>
