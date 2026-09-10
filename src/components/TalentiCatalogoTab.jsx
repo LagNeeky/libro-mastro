@@ -61,7 +61,7 @@ function TalentiCatalogoTab({ talentiCatalogo, setTalentiCatalogo, openDetail, p
       <p style={styles.hint}>Catalogo di riferimento dei talenti disponibili. Usa il tasto su ogni scheda per aggiungerlo (o toglierlo) direttamente dalla sezione "Talenti" del personaggio attivo.</p>
       <input style={styles.searchInput} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca un talento per nome..." />
       <input style={{ ...styles.searchInput, marginTop: 6 }} value={queryEffetto} onChange={(e) => setQueryEffetto(e.target.value)} placeholder="Cerca per effetto o descrizione (es. 'iniziativa', '+2', 'armatura pesante')..." />
-      <button style={styles.primaryBtn} onClick={apriNuovo}>+ Nuovo talento</button>
+      <button style={{ ...styles.primaryBtn, marginBottom: 10 }} onClick={apriNuovo}>+ Nuovo talento</button>
       <div style={styles.pgSelectorRow}>
         <button style={styles.smallBtn} onClick={() => setShowExport(true)}>⬇ Esporta</button>
         <button style={styles.smallBtn} onClick={() => importInputRef.current?.click()}>⬆ Importa</button>
