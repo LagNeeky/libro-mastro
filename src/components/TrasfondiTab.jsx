@@ -65,7 +65,7 @@ function TrasfondiTab({ backgrounds, setBackgrounds, openDetail }) {
       <h2 style={styles.panelTitle}>Background</h2>
       <p style={styles.hint}>Il Background di un personaggio definisce due competenze in abilità, eventuali strumenti, e un privilegio narrativo. Puoi collegarlo a un personaggio dalla Carta d'Identità.</p>
       <input style={styles.searchInput} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca un Background..." />
-      <button style={styles.primaryBtn} onClick={apriNuovo}>+ Nuovo Background</button>
+      <button style={{ ...styles.primaryBtn, marginBottom: 10 }} onClick={apriNuovo}>+ Nuovo Background</button>
       <div style={styles.pgSelectorRow}>
         <button style={styles.smallBtn} onClick={() => setShowExport(true)}>⬇ Esporta</button>
         <button style={styles.smallBtn} onClick={() => importInputRef.current?.click()}>⬆ Importa</button>
