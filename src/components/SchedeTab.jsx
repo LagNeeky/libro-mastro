@@ -13,9 +13,12 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
 
   const modByAb = useMemo(() => {
     const m = {};
-    ABILITIES.forEach((a) => { m[a] = mod(pg.abilita[a] + (razzaBonus[a] || 0) + (sottorazzaBonus[a] || 0)); });
+    ABILITIES.forEach((a) => {
+      const auto = mod(pg.abilita[a] + (razzaBonus[a] || 0) + (sottorazzaBonus[a] || 0));
+      m[a] = pg.modificatoreOverride?.[a] !== undefined && pg.modificatoreOverride?.[a] !== null ? pg.modificatoreOverride[a] : auto;
+    });
     return m;
-  }, [pg.abilita, pg.razzaId, pg.sottorazzaId]);
+  }, [pg.abilita, pg.razzaId, pg.sottorazzaId, pg.modificatoreOverride]);
 
   const livelloTotale = pg.classi.reduce((s, c) => s + Number(c.livello || 0), 0) || 1;
   const profBonus = PROF_BONUS_BY_LEVEL(livelloTotale);
@@ -623,7 +626,10 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
                   bonusRazza !== 0 && <div style={styles.hint}>Include {fmt(bonusRazza)} di bonus razza</div>
                 )}
                 <div style={styles.abilityModRow}>
-                  <span style={styles.abilityMod}>{fmt(modByAb[a])}</span>
+                  <NumInput min={-10} max={15} style={{ ...styles.abilityMod, ...(pg.modificatoreOverride?.[a] !== undefined && pg.modificatoreOverride?.[a] !== null ? styles.checkRowValOverride : {}) }} value={modByAb[a]} onCommit={(n) => updatePg({ modificatoreOverride: { ...pg.modificatoreOverride, [a]: n } })} />
+                  {pg.modificatoreOverride?.[a] !== undefined && pg.modificatoreOverride?.[a] !== null && (
+                    <button style={styles.resetOverrideBtn} title="Torna al calcolo automatico" onClick={() => { const next = { ...pg.modificatoreOverride }; delete next[a]; updatePg({ modificatoreOverride: next }); }}>⟳</button>
+                  )}
                   <button style={styles.diceBtn} onClick={() => openD20Roll({ title: `Prova di ${ABILITY_LABELS[a]}`, modifier: modByAb[a], modifierLabel: `${ABILITY_LABELS[a]} ${fmt(modByAb[a])}` })}>🎲</button>
                 </div>
               </div>
