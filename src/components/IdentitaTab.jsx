@@ -38,7 +38,7 @@ function IdentitaTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg,
           <div style={styles.nameInput}>{pg.nome || "Personaggio senza nome"}</div>
         </div>
 
-        <div style={styles.sectionLabel}>Immagine</div>
+        <div style={{ ...styles.sectionLabel, borderTop: "none", paddingTop: 0, marginTop: 0 }}>Immagine</div>
         <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImage} />
         {identita.immagineUrl ? (
           <div>
