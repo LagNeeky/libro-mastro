@@ -556,6 +556,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
           <StatBox label="Bonus competenza" value={fmt(profBonus)} sub={`dal livello ${livelloTotale}`} />
           <StatBox label="Iniziativa" value={fmt(iniziativa)} sub="DES + bonus manuale + extra">
             <NumInput min={-10} max={10} style={styles.smallNumInput} value={pg.iniziativaBonus} onCommit={(n) => updatePg({ iniziativaBonus: n })} />
+            <button style={styles.diceBtn} onClick={() => openD20Roll({ title: "Tiro Iniziativa", modifier: iniziativa, modifierLabel: `Iniziativa ${fmt(iniziativa)}` })} title="Tira l'iniziativa (non modifica nulla sulla scheda)">🎲</button>
           </StatBox>
           <StatBox label="Classe Armatura" value={caCalcolata} sub={senzaCompetenzaArmatura ? `⚠ Nessuna competenza con ${armaturaEquip.nome}: svantaggio a Forza/Destrezza, TS e attacchi; non puoi lanciare incantesimi` : (armaturaEquip ? armaturaEquip.nome : "nessuna armatura indossata")}>
             <input placeholder="override" style={styles.smallNumInput} value={pg.caOverride ?? ""} onChange={(e) => updatePg({ caOverride: e.target.value === "" ? null : e.target.value })} />
