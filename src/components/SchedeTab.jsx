@@ -5,20 +5,21 @@ import { TABELLA_SLOT_PIENI, TABELLA_PATTO_WARLOCK, puntiStregoneriaPerLivello, 
 import { ComboInput, NumInput, AutoTextarea, StatBox, SearchAddRow } from './shared.jsx';
 
 
-function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, infusioniCatalogo, regoleOpzionali, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
+function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, pg, updatePg, skills, setSkills, razze, sottorazze, classi, sottoclassi, armi, armature, accessori, incantesimi, competenzeGenericheCatalogo, setCompetenzeGenericheCatalogo, infusioniCatalogo, regoleOpzionali, backgrounds, openD20Roll, openDiceRoll, openDetail, onEsportaPg, onImportaPg }) {
   const razza = razze.find((r) => r.id === pg.razzaId);
   const sottorazza = sottorazze.find((s) => s.id === pg.sottorazzaId);
   const razzaBonus = razza?.bonus || zeroBonus();
   const sottorazzaBonus = sottorazza?.bonus || zeroBonus();
 
   const modByAb = useMemo(() => {
+    const bonusDaFeature = (ability) => [...pg.trattiRazziali, ...pg.privilegiClasse, ...pg.talenti].filter((e) => e.applicaA === `ABIL_${ability}`).reduce((s, e) => s + Number(e.valore || 0), 0);
     const m = {};
     ABILITIES.forEach((a) => {
-      const auto = mod(pg.abilita[a] + (razzaBonus[a] || 0) + (sottorazzaBonus[a] || 0));
+      const auto = mod(pg.abilita[a] + (razzaBonus[a] || 0) + (sottorazzaBonus[a] || 0) + bonusDaFeature(a));
       m[a] = pg.modificatoreOverride?.[a] !== undefined && pg.modificatoreOverride?.[a] !== null ? pg.modificatoreOverride[a] : auto;
     });
     return m;
-  }, [pg.abilita, pg.razzaId, pg.sottorazzaId, pg.modificatoreOverride]);
+  }, [pg.abilita, pg.razzaId, pg.sottorazzaId, pg.modificatoreOverride, pg.trattiRazziali, pg.privilegiClasse, pg.talenti]);
 
   const livelloTotale = pg.classi.reduce((s, c) => s + Number(c.livello || 0), 0) || 1;
   const profBonus = PROF_BONUS_BY_LEVEL(livelloTotale);
@@ -101,12 +102,12 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   const senzaCompetenzaArmatura = !!(armaturaEquip && pg.compArmature && !pg.compArmature[armaturaEquip.tipo]);
   const velocitaCalcolata = useMemo(() => {
     if (pg.velocitaOverride) return pg.velocitaOverride;
-    if (!richiedeForzaNonSoddisfatta) return velocitaBase;
-    const numero = parseFloat(String(velocitaBase).replace(",", "."));
-    if (isNaN(numero)) return velocitaBase;
-    const ridotta = Math.max(0, numero - 3);
-    return `${ridotta}`.replace(".", ",") + " m";
-  }, [pg.velocitaOverride, velocitaBase, richiedeForzaNonSoddisfatta]);
+    const numeroBase = parseFloat(String(velocitaBase).replace(",", "."));
+    const bonusVelocita = bonusExtra("Velocita");
+    if (isNaN(numeroBase)) return velocitaBase;
+    const totale = Math.max(0, numeroBase + bonusVelocita - (richiedeForzaNonSoddisfatta ? 3 : 0));
+    return `${totale}`.replace(".", ",") + " m";
+  }, [pg.velocitaOverride, velocitaBase, richiedeForzaNonSoddisfatta, pg.trattiRazziali, pg.privilegiClasse, pg.talenti]);
 
   const toggleTiro = (ab) => updatePg({ tiriCompetenti: pg.tiriCompetenti.includes(ab) ? pg.tiriCompetenti.filter((x) => x !== ab) : [...pg.tiriCompetenti, ab] });
   const toggleAbilita = (nome) => {
@@ -240,6 +241,24 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
       risultato.armi.daGuerra = risultato.armi.daGuerra || c.compEquip.armi.daGuerra;
     });
     updatePg({ compArmature: risultato.armature, compScudi: risultato.scudi, compArmi: risultato.armi });
+  };
+
+  const sincronizzaDaBackground = () => {
+    const bg = backgrounds.find((b) => b.id === pg.backgroundId);
+    if (!bg) return;
+    const nuoveAbilita = (bg.abilita || []).filter((nome) => skills.some((s) => s.name === nome) && !pg.abilitaCompetenti.includes(nome));
+    let nuoveCompetenzeGeneriche = [...pg.competenzeGeneriche];
+    let catalogoAggiornato = [...competenzeGenericheCatalogo];
+    (bg.strumenti || []).forEach((nomeStrumento) => {
+      let voce = catalogoAggiornato.find((c) => c.nome.toLowerCase() === nomeStrumento.toLowerCase());
+      if (!voce) {
+        voce = { id: uid(), nome: nomeStrumento, categoria: "Da Background", custom: true };
+        catalogoAggiornato = [...catalogoAggiornato, voce];
+      }
+      if (!nuoveCompetenzeGeneriche.includes(voce.id)) nuoveCompetenzeGeneriche = [...nuoveCompetenzeGeneriche, voce.id];
+    });
+    if (catalogoAggiornato.length !== competenzeGenericheCatalogo.length) setCompetenzeGenericheCatalogo(catalogoAggiornato);
+    updatePg({ abilitaCompetenti: [...pg.abilitaCompetenti, ...nuoveAbilita], competenzeGeneriche: nuoveCompetenzeGeneriche });
   };
 
   const raccogliTrattiRazziali = () => {
@@ -1176,7 +1195,7 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
 
         <div style={{ ...styles.sectionDivider, marginBottom: 16 }} />
 
-        <div style={{ ...styles.sectionLabel, borderTop: "none", paddingTop: 0, marginTop: 0 }}>Competenze Generiche</div>
+        <div style={{ ...styles.sectionLabel, borderTop: "none", paddingTop: 0, marginTop: 0 }}>Competenze Generiche <button style={styles.smallBtn} onClick={sincronizzaDaBackground}>🔄 Sincronizza da Background</button></div>
         <div style={styles.hint}>Strumenti, kit e veicoli con cui hai competenza. Spunta quelle che hai, o aggiungine una personalizzata se manca dalla lista.</div>
         {["Strumenti da Artigiano", "Kit Speciali", "Giochi e Musica", "Veicoli"].map((cat) => (
           <div key={cat} style={{ marginBottom: 10 }}>
