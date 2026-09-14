@@ -36,4 +36,4 @@ Da quel momento avrai un'icona come qualsiasi altra app, e funzionerà anche sen
  
 ## Serve aiuto?
  
-Dentro l'app trovi anche un pulsante **"ℹ️ Come funziona"** in alto, con un ripasso veloce di queste stesse informazioni. Per qualsiasi problema, dubbio o suggerimento, scrivi pure a [il tuo nome/contatto].
+Dentro l'app trovi anche un pulsante **"ℹ️ Come funziona"** in alto, con un ripasso veloce di queste stesse informazioni. Per qualsiasi problema, dubbio o suggerimento, scrivimi pure tramite GitHub.
