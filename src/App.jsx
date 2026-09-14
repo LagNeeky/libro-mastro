@@ -230,7 +230,7 @@ export default function LibroMastro() {
           skills={skills} setSkills={setSkills} razze={razze} sottorazze={sottorazze} classi={classi} sottoclassi={sottoclassi}
           armi={armi} armature={armature} accessori={accessori} incantesimi={incantesimi}
           competenzeGenericheCatalogo={competenzeGenericheCatalogo} setCompetenzeGenericheCatalogo={setCompetenzeGenericheCatalogo}
-          infusioniCatalogo={infusioniCatalogo} regoleOpzionali={regoleOpzionali}
+          infusioniCatalogo={infusioniCatalogo} regoleOpzionali={regoleOpzionali} backgrounds={backgrounds}
           openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} openDetail={setDetail}
           onEsportaPg={esportaPg} onImportaPg={importaPg} />}
         {tab === "identita" && <IdentitaTab personaggi={personaggi} attivoId={pg.id} setAttivoId={setAttivoId} aggiungiPg={aggiungiPg} rimuoviPg={rimuoviPg} pg={pg} updatePg={updatePg} backgrounds={backgrounds} />}
