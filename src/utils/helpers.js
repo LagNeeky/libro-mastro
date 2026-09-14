@@ -33,6 +33,8 @@ const APPLICA_A_OPTIONS = (skills) => [
   { value: "nessuno", label: "Nessun effetto meccanico" },
   { value: "CA", label: "Classe Armatura" },
   { value: "Iniziativa", label: "Iniziativa" },
+  { value: "Velocita", label: "Velocità (in metri)" },
+  ...ABILITIES.map((a) => ({ value: `ABIL_${a}`, label: `Punteggio di ${ABILITY_LABELS[a]}` })),
   ...ABILITIES.map((a) => ({ value: `TS_${a}`, label: `Tiro Salvezza ${ABILITY_LABELS[a]}` })),
   ...skills.map((s) => ({ value: `SKILL_${s.name}`, label: s.name })),
 ];
