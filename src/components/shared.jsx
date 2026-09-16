@@ -199,7 +199,7 @@ function dieStyle(value) {
   return { background: palette.panel, color: palette.parchment, borderColor: palette.line };
 }
 function DadiGenericiModal({ onClose, onTira }) {
-  const [notazione, setNotazione] = useState("1d20");
+  const [notazione, setNotazione] = useState("");
   const dadiComuni = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
   return (
     <div style={styles.overlay} onClick={onClose}>
@@ -218,8 +218,8 @@ function DadiGenericiModal({ onClose, onTira }) {
           onChange={(e) => setNotazione(e.target.value)}
           placeholder="es. 2d6+3"
         />
-        <button style={{ ...styles.smallBtn, marginTop: 8 }} onClick={() => setNotazione("")}>Pulisci</button>
-        <button style={{ ...styles.primaryBtn, marginTop: 12 }} disabled={!notazione.trim()} onClick={() => onTira(notazione)}>🎲 Tira</button>
+        <button style={{ ...styles.smallBtn, marginTop: 8, marginRight: 10 }} onClick={() => setNotazione("")}>Pulisci</button>
+        <button style={{ ...styles.primaryBtn, marginTop: 12 }} disabled={!notazione.trim()} onClick={() => onTira(notazione)}>✓ Conferma</button>
       </div>
     </div>
   );
