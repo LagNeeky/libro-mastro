@@ -198,6 +198,33 @@ function dieStyle(value) {
   if (value === 1) return { background: "#1f1b17", color: "#8a8171", borderColor: "#4a3f30" };
   return { background: palette.panel, color: palette.parchment, borderColor: palette.line };
 }
+function DadiGenericiModal({ onClose, onTira }) {
+  const [notazione, setNotazione] = useState("1d20");
+  const dadiComuni = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+  return (
+    <div style={styles.overlay} onClick={onClose}>
+      <div style={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        <button style={styles.modalClose} onClick={onClose}>✕</button>
+        <h3 style={styles.modalTitle}>🎲 Tira Dadi</h3>
+        <p style={styles.hint}>Un lancio rapido, sempre a portata di mano, non legato a nessun personaggio o scheda.</p>
+        <div style={styles.modeRow}>
+          {dadiComuni.map((d) => (
+            <button key={d} style={styles.modeBtn} onClick={() => setNotazione((n) => (n && n !== "" ? `${n}+1${d}` : `1${d}`))}>{d}</button>
+          ))}
+        </div>
+        <input
+          style={{ ...styles.formInput, display: "block", width: "100%", marginTop: 10, textAlign: "center", fontSize: 16 }}
+          value={notazione}
+          onChange={(e) => setNotazione(e.target.value)}
+          placeholder="es. 2d6+3"
+        />
+        <button style={{ ...styles.smallBtn, marginTop: 8 }} onClick={() => setNotazione("")}>Pulisci</button>
+        <button style={{ ...styles.primaryBtn, marginTop: 12 }} disabled={!notazione.trim()} onClick={() => onTira(notazione)}>🎲 Tira</button>
+      </div>
+    </div>
+  );
+}
+
 function RollModal({ roll, onClose, onChangeMode, onRoll }) {
   if (!roll) return null;
   if (roll.kind === "d20") {
@@ -263,4 +290,4 @@ function RuleTable({ header, rows }) {
 }
 
 
-export { ComboInput, FormModal, StatBox, SearchAddRow, NumInput, AutoTextarea, DetailModal, DetailField, RollModal, RuleTable };
+export { ComboInput, FormModal, StatBox, SearchAddRow, NumInput, AutoTextarea, DetailModal, DetailField, RollModal, DadiGenericiModal, RuleTable };
