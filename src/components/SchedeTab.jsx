@@ -244,21 +244,40 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
   };
 
   const sincronizzaDaBackground = () => {
+    const precedente = pg.backgroundSincronizzato;
+    let abilitaCompetenti = [...pg.abilitaCompetenti];
+    let competenzeGeneriche = [...pg.competenzeGeneriche];
+
+    // Toglie quanto aggiunto dalla sincronizzazione precedente (se il Background e' cambiato o e' stato rimosso)
+    if (precedente) {
+      abilitaCompetenti = abilitaCompetenti.filter((a) => !precedente.abilitaAggiunte.includes(a));
+      competenzeGeneriche = competenzeGeneriche.filter((c) => !precedente.competenzeGenericheAggiunte.includes(c));
+    }
+
     const bg = backgrounds.find((b) => b.id === pg.backgroundId);
-    if (!bg) return;
-    const nuoveAbilita = (bg.abilita || []).filter((nome) => skills.some((s) => s.name === nome) && !pg.abilitaCompetenti.includes(nome));
-    let nuoveCompetenzeGeneriche = [...pg.competenzeGeneriche];
+    if (!bg) {
+      // Nessun Background selezionato: solo pulizia, nessuna nuova sincronizzazione registrata
+      updatePg({ abilitaCompetenti, competenzeGeneriche, backgroundSincronizzato: null });
+      return;
+    }
+
+    const nuoveAbilita = (bg.abilita || []).filter((nome) => skills.some((s) => s.name === nome) && !abilitaCompetenti.includes(nome));
     let catalogoAggiornato = [...competenzeGenericheCatalogo];
+    const nuoveCompetenzeGenericheIds = [];
     (bg.strumenti || []).forEach((nomeStrumento) => {
       let voce = catalogoAggiornato.find((c) => c.nome.toLowerCase() === nomeStrumento.toLowerCase());
       if (!voce) {
         voce = { id: uid(), nome: nomeStrumento, categoria: "Da Background", custom: true };
         catalogoAggiornato = [...catalogoAggiornato, voce];
       }
-      if (!nuoveCompetenzeGeneriche.includes(voce.id)) nuoveCompetenzeGeneriche = [...nuoveCompetenzeGeneriche, voce.id];
+      if (!competenzeGeneriche.includes(voce.id)) nuoveCompetenzeGenericheIds.push(voce.id);
     });
     if (catalogoAggiornato.length !== competenzeGenericheCatalogo.length) setCompetenzeGenericheCatalogo(catalogoAggiornato);
-    updatePg({ abilitaCompetenti: [...pg.abilitaCompetenti, ...nuoveAbilita], competenzeGeneriche: nuoveCompetenzeGeneriche });
+    updatePg({
+      abilitaCompetenti: [...abilitaCompetenti, ...nuoveAbilita],
+      competenzeGeneriche: [...competenzeGeneriche, ...nuoveCompetenzeGenericheIds],
+      backgroundSincronizzato: { backgroundId: bg.id, abilitaAggiunte: nuoveAbilita, competenzeGenericheAggiunte: nuoveCompetenzeGenericheIds },
+    });
   };
 
   const raccogliTrattiRazziali = () => {
@@ -1033,7 +1052,11 @@ function SchedeTab({ personaggi, attivoId, setAttivoId, aggiungiPg, rimuoviPg, p
             <div style={styles.hint}>Il tasto aggiunge automaticamente gli incantesimi innati di razza (es. Tiefling, Aasimar, Elfo Scuro) e quelli "sempre pronti" concessi da Domini/Giuramenti/Patroni, senza contare nel numero di Prep./Conosciuti.</div>
             <SearchAddRow query={spellQuery} setQuery={setSpellQuery} results={spellResults} onAdd={(id) => { aggiungiIncantesimo(id); setSpellQuery(""); }} placeholder="Cerca un incantesimo per nome o scuola..." />
             <div style={styles.itemList}>
-              {pg.incantesimiNoti.map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; const puoUpcastare = s.livello > 0 && (s.danno || s.cura); const livelloLancio = pg.incantesimiLivelloLancio?.[id] || s.livello; const extraInfo = pg.incantesimiDannoExtra?.[id] || {}; return (
+              {[...pg.incantesimiNoti].sort((idA, idB) => {
+                const sa = incantesimi.find((x) => x.id === idA);
+                const sb = incantesimi.find((x) => x.id === idB);
+                return (sa?.livello ?? 0) - (sb?.livello ?? 0);
+              }).map((id) => { const s = incantesimi.find((x) => x.id === id); if (!s) return null; const puoUpcastare = s.livello > 0 && (s.danno || s.cura); const livelloLancio = pg.incantesimiLivelloLancio?.[id] || s.livello; const extraInfo = pg.incantesimiDannoExtra?.[id] || {}; return (
                 <div key={id} style={styles.itemGroup}>
                   <div style={styles.itemRow}>
                     <button style={styles.itemName} onClick={() => openDetail({ type: "incantesimo", data: s })}>{s.nome}{s.custom ? " ★" : ""}</button>
