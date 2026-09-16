@@ -24,6 +24,7 @@ const newCharacter = (nome = "") => ({
   bonusOrigineCustom: {},
   modificatoreOverride: {},
   genioTipo: "",
+  backgroundSincronizzato: null,
   lancioIncantesimiOverride: {},
   armiPossedute: [], armaturePossedute: [], armaturaIndossataInstId: null, accessoriPosseduti: [],
   inventario: [],
