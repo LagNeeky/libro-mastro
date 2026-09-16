@@ -13,7 +13,7 @@ import { DEFAULT_TALENTI_CATALOGO } from "./data/talenti.js";
 import { DEFAULT_COMPETENZE_GENERICHE } from "./data/competenze.js";
 import { DEFAULT_INFUSIONI } from "./data/infusioni.js";
 
-import { RollModal, DetailModal } from "./components/shared.jsx";
+import { RollModal, DetailModal, DadiGenericiModal } from "./components/shared.jsx";
 import SchedeTab from "./components/SchedeTab.jsx";
 import IdentitaTab from "./components/IdentitaTab.jsx";
 import RegoleTab from "./components/RegoleTab.jsx";
@@ -87,6 +87,7 @@ export default function LibroMastro() {
   const [personaggi, setPersonaggi, personaggiLoaded] = usePersistentState("personaggi", [newCharacter()], migratePersonaggi);
   const [attivoId, setAttivoId] = useState(null);
   const [roll, setRoll] = useState(null);
+  const [showDadiGenerici, setShowDadiGenerici] = useState(false);
   const [detail, setDetail] = useState(null);
   const [appunti, setAppunti, appuntiLoaded] = usePersistentState("appunti", []);
   const [documenti, setDocumenti, documentiLoaded] = usePersistentState("documenti", []);
@@ -205,6 +206,7 @@ export default function LibroMastro() {
                 {tabRegole.label}
               </button>
             )}
+            <button onClick={() => setShowDadiGenerici(true)} style={styles.navGroupBtn}>🎲 Dadi</button>
           </div>
           <div style={styles.tabsRow}>
             {tabsGruppo.map((t) => (
@@ -254,6 +256,7 @@ export default function LibroMastro() {
         {tab === "banca_indizi" && <BancaIndiziTab indizi={indizi} setIndizi={setIndizi} />}
       </main>
       <RollModal roll={roll} onClose={() => setRoll(null)} onChangeMode={changeRollMode} onRoll={performRoll} />
+      {showDadiGenerici && <DadiGenericiModal onClose={() => setShowDadiGenerici(false)} onTira={(notation) => { setShowDadiGenerici(false); openDiceRoll({ title: "Tiro Generico", notation }); }} />}
       <DetailModal detail={detail} onClose={() => setDetail(null)} classi={classi} />
       {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
     </div>
