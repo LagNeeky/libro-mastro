@@ -54,6 +54,8 @@ function newCreatura() {
     reazioni: [], // { id, nome, desc }
     note: "",
     immagineUrl: "",
+    luogoId: null,
+    fazioneId: null,
     custom: true,
   };
 }
