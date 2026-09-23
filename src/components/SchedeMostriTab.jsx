@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { styles } from '../styles.js';
 import { uid, mod, fmt, ABILITIES, ABILITY_LABELS } from '../utils/helpers.js';
 import { newCreatura, GS_BONUS_COMPETENZA } from '../data/creatura.js';
-import { AutoTextarea, NumInput } from './shared.jsx';
+import { AutoTextarea, NumInput, LinkPicker, LinkButton } from './shared.jsx';
 
 function ListaLibera({ titolo, voci, onChange, placeholderNome, placeholderDesc }) {
   const aggiungi = () => onChange([...voci, { id: uid(), nome: "", desc: "" }]);
@@ -25,10 +25,11 @@ function ListaLibera({ titolo, voci, onChange, placeholderNome, placeholderDesc 
   );
 }
 
-function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll, apriMostroId }) {
+function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll, apriMostroId, luoghi, fazioni, apriEntitaId, apriEntita }) {
   const [attivoId, setAttivoId] = useState(mostri[0]?.id || null);
   const [query, setQuery] = useState("");
   useEffect(() => { if (apriMostroId && mostri.some((m) => m.id === apriMostroId)) setAttivoId(apriMostroId); }, [apriMostroId, mostri]);
+  useEffect(() => { if (apriEntitaId?.tipo === "creatura" && apriEntitaId.id && mostri.some((m) => m.id === apriEntitaId.id)) setAttivoId(apriEntitaId.id); }, [apriEntitaId, mostri]);
   const attivo = mostri.find((m) => m.id === attivoId) || mostri[0];
 
   const aggiungiMostro = () => {
@@ -92,6 +93,19 @@ function SchedeMostriTab({ mostri, setMostri, openD20Roll, openDiceRoll, apriMos
           <input style={{ ...styles.invNome, flex: 1 }} placeholder="Taglia (es. Media)" value={attivo.taglia} onChange={(e) => updateAttivo({ taglia: e.target.value })} />
           <input style={{ ...styles.invPos, flex: 1 }} placeholder="Allineamento" value={attivo.allineamento} onChange={(e) => updateAttivo({ allineamento: e.target.value })} />
         </div>
+      </div>
+
+      <div style={styles.invRow}>
+        <div style={styles.invNome}>Si trova a</div>
+        <LinkPicker elenco={luoghi || []} value={attivo.luogoId} onChange={(id) => updateAttivo({ luogoId: id })} placeholder="Nessun luogo collegato" />
+        {attivo.luogoId && <LinkButton tipo="luogo" id={attivo.luogoId} elenco={luoghi || []} apriEntita={apriEntita} />}
+        <div style={styles.invSpacer} />
+      </div>
+      <div style={styles.invRow}>
+        <div style={styles.invNome}>Fazione</div>
+        <LinkPicker elenco={fazioni || []} value={attivo.fazioneId} onChange={(id) => updateAttivo({ fazioneId: id })} placeholder="Nessuna fazione collegata" />
+        {attivo.fazioneId && <LinkButton tipo="fazione" id={attivo.fazioneId} elenco={fazioni || []} apriEntita={apriEntita} />}
+        <div style={styles.invSpacer} />
       </div>
 
       <div style={styles.hpGrid}>
