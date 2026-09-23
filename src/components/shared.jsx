@@ -290,4 +290,44 @@ function RuleTable({ header, rows }) {
 }
 
 
-export { ComboInput, FormModal, StatBox, SearchAddRow, NumInput, AutoTextarea, DetailModal, DetailField, RollModal, DadiGenericiModal, RuleTable };
+function LinkButton({ tipo, id, elenco, apriEntita, placeholder }) {
+  const item = elenco.find((e) => e.id === id);
+  if (!id || !item) return placeholder ? <span style={styles.hint}>{placeholder}</span> : null;
+  return <button style={styles.linkButton} onClick={() => apriEntita(tipo, id)} title={`Apri: ${item.nome}`}>🔗 {item.nome}</button>;
+}
+
+function LinkPicker({ elenco, value, onChange, placeholder, consentiVuoto }) {
+  return (
+    <select style={styles.formInput} value={value || ""} onChange={(e) => onChange(e.target.value || null)}>
+      <option value="">{placeholder || "Nessuno"}</option>
+      {consentiVuoto === false ? null : null}
+      {elenco.map((e) => <option key={e.id} value={e.id}>{e.nome}</option>)}
+    </select>
+  );
+}
+
+function LinkMultiPicker({ elenco, valori, onChange, placeholder }) {
+  const [query, setQuery] = useState("");
+  const disponibili = elenco.filter((e) => !valori.includes(e.id) && e.nome.toLowerCase().includes(query.toLowerCase()));
+  const aggiungi = (id) => { onChange([...valori, id]); setQuery(""); };
+  const rimuovi = (id) => onChange(valori.filter((v) => v !== id));
+  return (
+    <div>
+      <div style={styles.condizioniRow}>
+        {valori.map((id) => {
+          const item = elenco.find((e) => e.id === id);
+          return item ? <span key={id} style={styles.condizioneChipAttiva}>{item.nome} <button style={styles.linkChipX} onClick={() => rimuovi(id)}>✕</button></span> : null;
+        })}
+      </div>
+      <input style={styles.searchInput} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder || "Cerca per aggiungere..."} />
+      {query && (
+        <div style={styles.linkSuggestBox}>
+          {disponibili.slice(0, 8).map((e) => <button key={e.id} style={styles.linkSuggestItem} onClick={() => aggiungi(e.id)}>{e.nome}</button>)}
+          {disponibili.length === 0 && <div style={styles.hint}>Nessun risultato</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export { ComboInput, FormModal, StatBox, SearchAddRow, NumInput, AutoTextarea, DetailModal, DetailField, RollModal, DadiGenericiModal, RuleTable, LinkButton, LinkPicker, LinkMultiPicker };
