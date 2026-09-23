@@ -27,6 +27,11 @@ import AppuntiTab from "./components/AppuntiTab.jsx";
 import ConoscenzaTab from "./components/ConoscenzaTab.jsx";
 import MappeTab from "./components/MappeTab.jsx";
 import SchedeMostriTab from "./components/SchedeMostriTab.jsx";
+import LuoghiTab from "./components/LuoghiTab.jsx";
+import FazioniTab from "./components/FazioniTab.jsx";
+import OggettiNarrativiTab from "./components/OggettiNarrativiTab.jsx";
+import TracciamentoPGTab from "./components/TracciamentoPGTab.jsx";
+import MissioniTab from "./components/MissioniTab.jsx";
 import TrackerTurniTab from "./components/TrackerTurniTab.jsx";
 import TrackerIncontriTab from "./components/TrackerIncontriTab.jsx";
 import DiarioSessioneTab from "./components/DiarioSessioneTab.jsx";
@@ -38,7 +43,7 @@ const TABS = [
   { id: "razze", label: "Razze", gruppo: "giocatore" }, { id: "classi", label: "Classi", gruppo: "giocatore" }, { id: "trasfondi", label: "Background", gruppo: "giocatore" }, { id: "talenti_catalogo", label: "Talenti", gruppo: "giocatore" },
   { id: "incantesimi", label: "Incantesimi", gruppo: "giocatore" }, { id: "equip", label: "Armi, Armature & Accessori", gruppo: "giocatore" },
   { id: "appunti", label: "Appunti", gruppo: "giocatore" }, { id: "conoscenza", label: "Conoscenza", gruppo: "giocatore" }, { id: "mappe", label: "Mappe", gruppo: "giocatore" },
-  { id: "tracker_turni", label: "Tracker Turni", gruppo: "master" }, { id: "schede_mostri", label: "Schede Mostri & PNG", gruppo: "master" },
+  { id: "tracker_turni", label: "Tracker Turni", gruppo: "master" }, { id: "schede_mostri", label: "Schede Mostri & PNG", gruppo: "master" }, { id: "luoghi", label: "Luoghi", gruppo: "master" }, { id: "fazioni", label: "Fazioni & Organizzazioni", gruppo: "master" }, { id: "oggetti_narrativi", label: "Oggetti Narrativi", gruppo: "master" }, { id: "tracciamento_pg", label: "Tracciamento PG", gruppo: "master" }, { id: "missioni", label: "Missioni", gruppo: "master" },
   { id: "mappe_master", label: "Mappe (Master)", gruppo: "master" }, { id: "appunti_master", label: "Appunti (Master)", gruppo: "master" }, { id: "conoscenza_master", label: "Conoscenza (Master)", gruppo: "master" },
   { id: "tracker_incontri", label: "Tracker Incontri", gruppo: "master" }, { id: "diario_sessione", label: "Diario di Sessione", gruppo: "master" }, { id: "banca_indizi", label: "Banca Indizi & Segreti", gruppo: "master" },
 ];
@@ -46,6 +51,7 @@ const TABS = [
 export default function LibroMastro() {
   const [tab, setTab] = useState("schede");
   const [apriMostroId, setApriMostroId] = useState(null);
+  const [apriEntitaId, setApriEntitaId] = useState(null); // { tipo, id } per la navigazione tra schede collegate (Luoghi, Fazioni, ecc.)
 
   useEffect(() => {
     const parametri = new URLSearchParams(window.location.search);
@@ -63,6 +69,12 @@ export default function LibroMastro() {
     const url = new URL(window.location.href);
     url.search = fonte === "pg" ? `?apriTab=schede&pgId=${id}` : `?apriTab=schede_mostri&mostroId=${id}`;
     window.open(url.toString(), "_blank");
+  };
+  const MAPPA_TIPO_TAB_ENTITA = { luogo: "luoghi", fazione: "fazioni", oggetto_narrativo: "oggetti_narrativi", missione: "missioni", pg_narrativo: "tracciamento_pg", creatura: "schede_mostri" };
+  const apriEntita = (tipo, id) => {
+    if (!id || !MAPPA_TIPO_TAB_ENTITA[tipo]) return;
+    setTab(MAPPA_TIPO_TAB_ENTITA[tipo]);
+    setApriEntitaId({ tipo, id });
   };
   const [tabOrder, setTabOrder, tabOrderLoaded] = usePersistentState("tabOrder", TABS.map((t) => t.id));
   const [draggedTabId, setDraggedTabId] = useState(null);
@@ -93,6 +105,11 @@ export default function LibroMastro() {
   const [documenti, setDocumenti, documentiLoaded] = usePersistentState("documenti", []);
   const [mappe, setMappe, mappeLoaded] = usePersistentState("mappe", []);
   const [mostri, setMostri, mostriLoaded] = usePersistentState("mostri", []);
+  const [luoghi, setLuoghi, luoghiLoaded] = usePersistentState("luoghi", []);
+  const [fazioni, setFazioni, fazioniLoaded] = usePersistentState("fazioni", []);
+  const [oggettiNarrativi, setOggettiNarrativi, oggettiNarrativiLoaded] = usePersistentState("oggettiNarrativi", []);
+  const [trackingPG, setTrackingPG, trackingPGLoaded] = usePersistentState("trackingPG", []);
+  const [missioni, setMissioni, missioniLoaded] = usePersistentState("missioni", []);
   const [tracker, setTracker, trackerLoaded] = usePersistentState("tracker", { combattenti: [], round: 1, turnoAttivoId: null });
   const [appuntiMaster, setAppuntiMaster, appuntiMasterLoaded] = usePersistentState("appuntiMaster", []);
   const [documentiMaster, setDocumentiMaster, documentiMasterLoaded] = usePersistentState("documentiMaster", []);
@@ -104,7 +121,7 @@ export default function LibroMastro() {
     sottoclassiLoaded && armiLoaded && armatureLoaded && accessoriLoaded && incantesimiLoaded &&
     backgroundsLoaded && talentiCatalogoLoaded && competenzeGenericheLoaded && infusioniLoaded &&
     personaggiLoaded && appuntiLoaded && documentiLoaded && mappeLoaded &&
-    mostriLoaded && trackerLoaded && appuntiMasterLoaded && documentiMasterLoaded && mappeMasterLoaded && sessioniLoaded && indiziLoaded && navGroupLoaded;
+    mostriLoaded && trackerLoaded && appuntiMasterLoaded && documentiMasterLoaded && mappeMasterLoaded && sessioniLoaded && indiziLoaded && navGroupLoaded && luoghiLoaded && fazioniLoaded && oggettiNarrativiLoaded && trackingPGLoaded && missioniLoaded;
 
   const orderedTabs = tabOrder.map((id) => TABS.find((t) => t.id === id)).filter(Boolean);
   const tabsGruppo = orderedTabs.filter((t) => t.gruppo === navGroup);
@@ -247,7 +264,12 @@ export default function LibroMastro() {
         {tab === "conoscenza" && <ConoscenzaTab documenti={documenti} setDocumenti={setDocumenti} />}
         {tab === "mappe" && <MappeTab mappe={mappe} setMappe={setMappe} />}
         {tab === "tracker_turni" && <TrackerTurniTab personaggi={personaggi} mostri={mostri} tracker={tracker} setTracker={setTracker} openDiceRoll={openDiceRoll} apriSchedaInNuovaFinestra={apriSchedaInNuovaFinestra} />}
-        {tab === "schede_mostri" && <SchedeMostriTab mostri={mostri} setMostri={setMostri} openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} apriMostroId={apriMostroId} />}
+        {tab === "schede_mostri" && <SchedeMostriTab mostri={mostri} setMostri={setMostri} openD20Roll={openD20Roll} openDiceRoll={openDiceRoll} apriMostroId={apriMostroId} luoghi={luoghi} fazioni={fazioni} apriEntitaId={apriEntitaId} apriEntita={apriEntita} />}
+        {tab === "luoghi" && <LuoghiTab luoghi={luoghi} setLuoghi={setLuoghi} fazioni={fazioni} mostri={mostri} apriEntitaId={apriEntitaId} apriEntita={apriEntita} />}
+        {tab === "fazioni" && <FazioniTab fazioni={fazioni} setFazioni={setFazioni} luoghi={luoghi} mostri={mostri} apriEntitaId={apriEntitaId} apriEntita={apriEntita} />}
+        {tab === "oggetti_narrativi" && <OggettiNarrativiTab oggetti={oggettiNarrativi} setOggetti={setOggettiNarrativi} luoghi={luoghi} mostri={mostri} apriEntitaId={apriEntitaId} apriEntita={apriEntita} />}
+        {tab === "tracciamento_pg" && <TracciamentoPGTab personaggi={personaggi} tracking={trackingPG} setTracking={setTrackingPG} apriEntitaId={apriEntitaId} />}
+        {tab === "missioni" && <MissioniTab missioni={missioni} setMissioni={setMissioni} luoghi={luoghi} fazioni={fazioni} mostri={mostri} apriEntitaId={apriEntitaId} apriEntita={apriEntita} />}
         {tab === "mappe_master" && <MappeTab mappe={mappeMaster} setMappe={setMappeMaster} />}
         {tab === "appunti_master" && <AppuntiTab appunti={appuntiMaster} setAppunti={setAppuntiMaster} />}
         {tab === "conoscenza_master" && <ConoscenzaTab documenti={documentiMaster} setDocumenti={setDocumentiMaster} />}
