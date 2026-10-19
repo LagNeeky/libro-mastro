@@ -1,4 +1,4 @@
-# Codice di Condotta
+# Codice di Comportamento
 
 ## Il nostro impegno
 
